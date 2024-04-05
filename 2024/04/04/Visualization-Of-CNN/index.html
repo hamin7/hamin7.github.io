@@ -93,7 +93,7 @@
 <h1 id="3-특성-맵-시각화"><a href="#3-특성-맵-시각화" class="headerlink" title="3. 특성 맵 시각화"></a>3. 특성 맵 시각화</h1><p>케라스 패션 MNIST 데이터셋으로 훈련 세트의 첫 번째 샘플을 그려본다.</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(train_input, train_target), (test_input, test_target) = keras.datasets.fashion_mnist.load_data()</span><br><span class="line">plt.imshow(train_input[<span class="number">0</span>], cmap=<span class="string">&#x27;gray_r&#x27;</span>)</span><br><span class="line">plt.show()</span><br></pre></td></tr></table></figure>
 
-<p>~<a href="../images/Visualization-Of-CNN/boots.png">boots</a></p>
+<p><img src="/../images/Visualization-Of-CNN/boots.png" alt="boots"></p>
 <p>이 샘플을 conv_acti 모델에 주입하여 Conv2D층이 만드는 특성 맵을 출력한다.<br>입력 차원을 reshape()하고, 255로 나누어 표준화한다.</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">inputs = train_input[<span class="number">0</span>:<span class="number">1</span>].reshape(-<span class="number">1</span>, <span class="number">28</span>, <span class="number">28</span>, <span class="number">1</span>) /<span class="number">255.0</span></span><br><span class="line">feature_maps = conv_acti.predict(inputs)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(feature_maps.shape)</span><br></pre></td></tr></table></figure>
 
