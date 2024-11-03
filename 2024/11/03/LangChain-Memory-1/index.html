@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>멀티턴, 대화 요약를 위한 DB 설계 - Kahlua</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Kahlua"><meta name="msapplication-TileImage" content="/img/avatar.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Kahlua"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="멀티턴, summary를 지원할 수 있도록 DB 설계를 해보도록 하겠다."><meta property="og:type" content="blog"><meta property="og:title" content="멀티턴, 대화 요약를 위한 DB 설계"><meta property="og:url" content="https://hamin7.github.io/2024/11/03/LangChain-Memory-1/"><meta property="og:site_name" content="Kahlua"><meta property="og:description" content="멀티턴, summary를 지원할 수 있도록 DB 설계를 해보도록 하겠다."><meta property="og:locale" content="en_US"><meta property="og:image" content="https://hamin7.github.io/gallery/langChain.png"><meta property="article:published_time" content="2024-11-03T07:54:45.000Z"><meta property="article:modified_time" content="2024-11-03T08:27:59.869Z"><meta property="article:author" content="hamin"><meta property="article:tag" content="LangChain"><meta property="article:tag" content="LLM"><meta property="twitter:card" content="summary"><meta property="twitter:image:src" content="https://hamin7.github.io/gallery/langChain.png"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://hamin7.github.io/2024/11/03/LangChain-Memory-1/"},"headline":"멀티턴, 대화 요약를 위한 DB 설계","image":["https://hamin7.github.io/gallery/langChain.png"],"datePublished":"2024-11-03T07:54:45.000Z","dateModified":"2024-11-03T08:27:59.869Z","author":{"@type":"Person","name":"hamin"},"publisher":{"@type":"Organization","name":"Kahlua","logo":{"@type":"ImageObject","url":"https://hamin7.github.io/img/avatar.png"}},"description":"멀티턴, summary를 지원할 수 있도록 DB 설계를 해보도록 하겠다."}</script><link rel="canonical" href="https://hamin7.github.io/2024/11/03/LangChain-Memory-1/"><link rel="icon" href="/img/avatar.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start --><script>
+  (function () {
+      function switchTab() {
+          if (!location.hash) {
+            return;
+          }
+
+          const id = '#' + CSS.escape(location.hash.substring(1));
+          const $tabMenu = document.querySelector(`.tabs a[href="${id}"]`);
+          if (!$tabMenu) {
+            return;
+          }
+
+          const $tabMenuContainer = $tabMenu.parentElement.parentElement;
+          Array.from($tabMenuContainer.children).forEach($menu => $menu.classList.remove('is-active'));
+          Array.from($tabMenuContainer.querySelectorAll('a'))
+              .map($menu => document.getElementById($menu.getAttribute("href").substring(1)))
+              .forEach($content => $content.classList.add('is-hidden'));
+
+          if ($tabMenu) {
+              $tabMenu.parentElement.classList.add('is-active');
+          }
+          const $activeTab = document.querySelector(id);
+          if ($activeTab) {
+              $activeTab.classList.remove('is-hidden');
+          }
+      }
+      switchTab();
+      window.addEventListener('hashchange', switchTab, false);
+  })();
+  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.1.1"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/avatar.png" alt="Kahlua" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a><a class="navbar-item search" title="Search" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><div class="card-image"><span class="image is-7by3"><img class="fill" src="/gallery/langChain.png" alt="멀티턴, 대화 요약를 위한 DB 설계"></span></div><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item">Posted&nbsp;<time dateTime="2024-11-03T07:54:45.000Z" title="11/3/2024, 4:54:45 PM">2024-11-03</time></span><span class="level-item">Updated&nbsp;<time dateTime="2024-11-03T08:27:59.869Z" title="11/3/2024, 5:27:59 PM">2024-11-03</time></span><span class="level-item"><a class="link-muted" href="/categories/LLM/">LLM</a><span> / </span><a class="link-muted" href="/categories/LLM/LangChain/">LangChain</a></span><span class="level-item">22 minutes read (About 3308 words)</span></div></div><h1 class="title is-3 is-size-4-mobile">멀티턴, 대화 요약를 위한 DB 설계</h1><div class="content"><p>멀티턴, summary를 지원할 수 있도록 DB 설계를 해보도록 하겠다.</p>
+<span id="more"></span>
+
+<h1 id="DB-종류-선정"><a href="#DB-종류-선정" class="headerlink" title="DB 종류 선정"></a>DB 종류 선정</h1><ol>
+<li>SQLite : 간단하고 빠르며, 챗봇 애플리케이션의 대화 기록을 관리하는 데 적합.</li>
+</ol>
+<ul>
+<li><p>설치 및 설정이 간단 : 파일 기반 DB이므로 별도의 서버 설정이 필요 없고, 파일 하나로 데이터베이스를 다룰 수 있어 빠르게 사용 가능.</p>
+</li>
+<li><p>경량화 된 구조 : 작은 규모의 데이터베이스에 적합하며, 챗봇 대화 로그와 같이 비교적 단순한 데이터 구조를 다룰 때 효과적</p>
+</li>
+<li><p>빠른 성능 : 파일 기반 데이터베이스로, 챗봇 애플리케이션의 빠른 응답에 적합.</p>
+</li>
+<li><p>호환성 : 대부분의 언어와 플랫폼에서 기본으로 지원</p>
+</li>
+<li><p>결론 : 챗봇 대화 로그나 요약을 저장하는 정도의 용도라면 SQLite가 효율적, 만약 데이터베이스의 확장성과 분산 처리가 필요하다면 PostgreSQL 또는 MySQL 같은 데이터베이스로 전환하는 것이 좋다.<br><a target="_blank" rel="noopener" href="https://wikidocs.net/233813">09. SQLite 에 대화내용 저장</a></p>
+</li>
+</ul>
+<ol start="2">
+<li>Redis</li>
+</ol>
+<ul>
+<li><p>고속 데이터 처리 : 메모리 기반, I&#x2F;O 빠르다, 대화 데이터의 실시간 처리가 중요한 챗봇 애플리케이션에 적합.</p>
+</li>
+<li><p>TTL 기능 : 데이터 만료시간 설정 가능</p>
+</li>
+<li><p>경량 데이터 처리 : 데이터 구조가 간단하여 작은 규모의 데이터를 빠르게 저장하고 접근 가능.</p>
+</li>
+<li><p>데이터 영구성 부족 : 인메모리DB, 서버 재기동시 데이터 손실 → 스냅샷과 AOF 설정 추가 필요, but 완전한 영구 저장 솔루션보다는 다소 제한적.</p>
+</li>
+<li><p>대규모 데이터 저장에 적합하지 않음 : 인메모리DB, 메모리, 비용문제 발생 가능성</p>
+</li>
+<li><p>데이터 일관성 문제 : 데이터일관성 보다는 속도에 중점 → 상관 없을것 같기도 함..</p>
+</li>
+</ul>
+<ol start="3">
+<li>PostgreSQL</li>
+</ol>
+<ul>
+<li><p>확장성 및 안정성 : 대규모 데이터를 안정적으로 처리할 수 있는 확장성이 뛰어난 데이터베이스.</p>
+</li>
+<li><p>트랜잭선 지원 : 트랜잭션 처리 및 동시성 제어에 강력한 기능 제공. 데이터의 일관성과 무결성 보장.</p>
+</li>
+<li><p>인덱싱및 고급 쿼리 지원 : 요약이나 특정 대화만 빠르게 조회해야 할 때 성능을 높이는 데 유리.</p>
+</li>
+<li><p>설치 및 관리의 복잡성 : 서버 설치가 필요하고 구성도 다소 복잡함.</p>
+</li>
+<li><p>메모리 및 디스크 요구사항 : 시스템 리소스를 더 많이 요구, 소규모 프로젝트나 단순한 대화 기록 저장 용도로는 다소 과함.</p>
+</li>
+<li><p>결론 : 챗봇 데이터가 많아지고 검색이나 통계 분석이 중요한 경우 매우 적합한 선택. 다만 프로젝트 초기 개발 단계이거나 간단한 챗봇 로그 용도라면 PostgreSQL의 장점 활용 못할수도 있음.</p>
+</li>
+</ul>
+<h1 id="1안-SQLite-사용"><a href="#1안-SQLite-사용" class="headerlink" title="1안 : SQLite 사용"></a>1안 : SQLite 사용</h1><h2 id="테이블-정의서"><a href="#테이블-정의서" class="headerlink" title="테이블 정의서"></a>테이블 정의서</h2><p>한 턴의 대화마다 요약을 한다고 가정 했을 때.</p>
+<p>Table 명 : interactions</p>
+<table>
+<thead>
+<tr>
+<th>No</th>
+<th>Column Name</th>
+<th>Attribute Name</th>
+<th>Type</th>
+<th>Null</th>
+<th>Keys</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>conversation_id</td>
+<td>transaction_id</td>
+<td>INTEGER</td>
+<td>NN</td>
+<td>PK</td>
+<td>Sequence</td>
+</tr>
+<tr>
+<td>2</td>
+<td>user_uuid</td>
+<td>user_id</td>
+<td>TEXT</td>
+<td>NN</td>
+<td></td>
+<td>user id</td>
+</tr>
+<tr>
+<td>3</td>
+<td>user_input</td>
+<td>message</td>
+<td>TEXT</td>
+<td>NN</td>
+<td></td>
+<td>user 발화</td>
+</tr>
+<tr>
+<td>4</td>
+<td>agent_response</td>
+<td>response</td>
+<td>TEXT</td>
+<td>NN</td>
+<td></td>
+<td>agent 응답</td>
+</tr>
+<tr>
+<td>5</td>
+<td>summary</td>
+<td>summary</td>
+<td>TEXT</td>
+<td>NN</td>
+<td></td>
+<td>대화내용 요약</td>
+</tr>
+<tr>
+<td>6</td>
+<td>timestamp</td>
+<td>timestamp</td>
+<td>TIMESTAMP</td>
+<td>NN</td>
+<td></td>
+<td>agent 응답</td>
+</tr>
+</tbody></table>
+<h1 id="Redis-PostgreSQL"><a href="#Redis-PostgreSQL" class="headerlink" title="Redis + PostgreSQL?"></a>Redis + PostgreSQL?</h1><ol>
+<li>Redis로 실시간 대화 기록 처리</li>
+</ol>
+<ul>
+<li>최신 대화 기록과 같은 실시간 데이터를 Redis에 저장하여 빠르게 읽고 쓰기 가능.</li>
+<li>대화 중에는 Redis에서 데이터 관리.</li>
+</ul>
+<ol start="2">
+<li>PostgreSQL로 영구 데이터 저장</li>
+</ol>
+<ul>
+<li>주요 대화 기록이나 요약, 사용자 정보 등의 영구적인 데이터를 PostgreSQL에 저장해 장기적으로 유지</li>
+</ul>
+<ol start="3">
+<li>Redis에서 PostgreSQL로 데이터마이그레이션</li>
+</ol>
+<ul>
+<li>Redis에 저장된 데이터를 주기적으로 PostgreSQL로 이전하는 스케줄러 사용. (배치 작업 등)</li>
+</ul>
+<h2 id="단점"><a href="#단점" class="headerlink" title="단점"></a>단점</h2><ol>
+<li>시스템 복잡성 증가</li>
+</ol>
+<ul>
+<li>각 데이터베이스의 설정, 관리, 모니터링이 필요하며, 장애 대응이나 성능 최적화도 각각 별도로 수행해야 한다.</li>
+<li>데이터 동기화가 실패하거나 지연되면 Redis와 PostgreSQL 간의 데이터 불일치 문제가 발생할 수 있어, 이를 해결하기 위한 모니터링과 에러 핸들링이 필요</li>
+</ul>
+<ol start="2">
+<li>메모리 비용 증가</li>
+</ol>
+<ul>
+<li>Redis는 대량의 데이터를 저장할 경우 메모리 비용 높다.</li>
+<li>Redis의 메모리 사용량을 줄이기 위해 TTL을 설정 -&gt; 필요한 경우 모든 데이터를 PostgreSQL에 영구 저장해야 하므로 Redis와 PostgreSQL의 데이터 저장 비용이 중복</li>
+</ul>
+<ol start="3">
+<li>두 시스템의 상이한 데이터 모델</li>
+</ol>
+<ul>
+<li>Redis와 PostgreSQL은 서로 다른 데이터 모델과 쿼리 방식을 사용 (키-값 vs SQL)</li>
+</ul>
+<h1 id="Langchain-memory의-ConversationSummaryBufferMemory-등이-Redis를-대체-가능한가"><a href="#Langchain-memory의-ConversationSummaryBufferMemory-등이-Redis를-대체-가능한가" class="headerlink" title="Langchain.memory의 ConversationSummaryBufferMemory 등이 Redis를 대체 가능한가?"></a>Langchain.memory의 ConversationSummaryBufferMemory 등이 Redis를 대체 가능한가?</h1><h2 id="ConversationSummaryMemory는"><a href="#ConversationSummaryMemory는" class="headerlink" title="ConversationSummaryMemory는?"></a>ConversationSummaryMemory는?</h2><ul>
+<li>대화 요약에 특화 : 요약을 기반으로 챗봇의 기억을 관리하는 것이 목적</li>
+<li>메모리 기반 : 임시 메모리에 저장. 서버 재기동 하거나 메모리 초기화 시 데이터 소실 → Redis는 스냅샷과 AOF 설정으로 반 영구 저장 가능</li>
+<li>속도 및 접근성 : conversationSummaryMemory는 단일 프로세스 내의 임시 메모리로 사용되기 때문에 Redis처럼 여러 클라이언트가 접근하는 다중 프로세스 환경에서 사용하기는 제한적.</li>
+</ul>
+<p>→ ConversationSummaryBufferMemory는 대화 내용을 요약하고 간단히 참조하는 메모리 역할에는 유용하지만 Redis를 대체할 수 있는 완전한 데이터 저장 솔루션은 아님.</p>
+<p>→ 영구적이고 구조화된 대화 데이터를 저장하려면 Redis와 같은 외부 영구 저장소가 필요하며, ConversationSummaryBufferMemory는 Redis를 보완하는 임시 요약 메모리로 활용 가능.</p>
+<h1 id="RunnableWithMessageHistory-Redis"><a href="#RunnableWithMessageHistory-Redis" class="headerlink" title="RunnableWithMessageHistory + Redis"></a>RunnableWithMessageHistory + Redis</h1><p>RunnableWithMessageHistory : 대화 기록과 맥락을 효과적으로 관리하기 위해 LangChain에서 제공하는 클래스</p>
+<ul>
+<li>이전 메시지의 맥락을 유지해야 할 때 유용.</li>
+<li>메시지 기록이 시간 순으로 관리되므로, 대화의 특정 메시지를 빠르게 조회가능</li>
+<li>RunnableWithMessageHistory와 함께 대화 요약 모델(예: GPT-3, GPT-4 등)을 연결하여 요약 기능을 구현. 이 클래스는 요약이 필요한 메시지를 정리하여 전달하고, 요약된 응답을 받아 메시지 히스토리에 추가하는 방식으로 동작</li>
+</ul>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> langchain_community.chat_message_histories <span class="keyword">import</span> ChatMessageHistory</span><br><span class="line"><span class="keyword">from</span> langchain_core.chat_history <span class="keyword">import</span> BaseChatMessageHistory</span><br><span class="line"><span class="keyword">from</span> langchain_core.runnables.history <span class="keyword">import</span> RunnableWithMessageHistory</span><br><span class="line">store = &#123;&#125;  <span class="comment"># 세션 기록을 저장할 딕셔너리</span></span><br><span class="line"><span class="comment"># 세션 ID를 기반으로 세션 기록을 가져오는 함수</span></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">get_session_history</span>(<span class="params">session_ids: <span class="built_in">str</span></span>) -&gt; BaseChatMessageHistory:</span><br><span class="line">    <span class="built_in">print</span>(session_ids)</span><br><span class="line">    <span class="keyword">if</span> session_ids <span class="keyword">not</span> <span class="keyword">in</span> store:  <span class="comment"># 세션 ID가 store에 없는 경우</span></span><br><span class="line">        <span class="comment"># 새로운 ChatMessageHistory 객체를 생성하여 store에 저장</span></span><br><span class="line">        store[session_ids] = ChatMessageHistory()</span><br><span class="line">    <span class="keyword">return</span> store[session_ids]  <span class="comment"># 해당 세션 ID에 대한 세션 기록 반환</span></span><br><span class="line">with_message_history = (</span><br><span class="line">    RunnableWithMessageHistory(  <span class="comment"># RunnableWithMessageHistory 객체 생성</span></span><br><span class="line">        runnable,  <span class="comment"># 실행할 Runnable 객체</span></span><br><span class="line">        get_session_history,  <span class="comment"># 세션 기록을 가져오는 함수</span></span><br><span class="line">        input_messages_key=<span class="string">&quot;input&quot;</span>,  <span class="comment"># 입력 메시지의 키</span></span><br><span class="line">        history_messages_key=<span class="string">&quot;history&quot;</span>,  <span class="comment"># 기록 메시지의 키</span></span><br><span class="line">    )</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p>메시지 기록을 효과적으로 관리하려면 두 가지 요소 필요</p>
+<ol>
+<li>Runnable : 주로 Retriever, Chain과 같이 BaseChatMessageHistory와 상호작용하는 runnable 객체</li>
+<li>BaseChatMessageHistory의 인스턴스를 반환하는 호출 가능한 객체 (callable)</li>
+</ol>
+<ul>
+<li>메시지 기록을 관리하기 위한 객체</li>
+<li>메시지 기록을 저장, 검색, 업데이트하는 데 사용.</li>
+</ul>
+<h2 id="무엇을-이용해-요약을-하는가"><a href="#무엇을-이용해-요약을-하는가" class="headerlink" title="무엇을 이용해 요약을 하는가?"></a>무엇을 이용해 요약을 하는가?</h2><ol>
+<li>언어 모델을 사용한 요약</li>
+</ol>
+<ul>
+<li>RunnableWithMessageHistory를 특정 언어 모델(예: OpenAI의 GPT)과 함께 설정하면, 대화 내용을 요약하는 요청을 모델에 전달</li>
+</ul>
+<ol start="2">
+<li>LangChain의 요약 도구</li>
+</ol>
+<ul>
+<li>LangChain에서는 특정 요약 알고리즘을 사용하거나, SummaryMemory 클래스를 추가하여 반복적인 요약을 통해 핵심 내용을 추려나가는 구조를 제공</li>
+</ul>
+<h2 id="요약할-시점-커스터마이징"><a href="#요약할-시점-커스터마이징" class="headerlink" title="요약할 시점 커스터마이징"></a>요약할 시점 커스터마이징</h2><p>RunnableWithMessageHistory와 ConversationSummaryMemory를 사용할 때, 특정 조건에 따라 요약을 트리거할 수 있도록 커스터마이징 가능</p>
+<p>대화의 길이, 특정 이벤트 발생, 주기적인 타이밍 등 요약 시점을 유연하게 조정 가능</p>
+<ol>
+<li>메시지 수에 따른 요약 트리거<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> <span class="built_in">len</span>(runnable.message_history) &gt;= <span class="number">10</span>:</span><br><span class="line">    summary_memory.update_summary(runnable.message_history)</span><br></pre></td></tr></table></figure></li>
+<li>특정 키워드 또는 이벤트에 따라 요약<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">user_input = <span class="string">&quot;요약해줘&quot;</span></span><br><span class="line"><span class="keyword">if</span> <span class="string">&quot;요약&quot;</span> <span class="keyword">in</span> user_input:</span><br><span class="line">    summary_memory.update_summary(runnable.message_history)</span><br></pre></td></tr></table></figure></li>
+<li>주기적 요약 (타이머 기반)<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">periodic_summary</span>():</span><br><span class="line">    <span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">        time.sleep(<span class="number">300</span>)  <span class="comment"># 5분마다 요약</span></span><br><span class="line">        summary_memory.update_summary(runnable.message_history)</span><br></pre></td></tr></table></figure></li>
+<li>대화의 특정 단계에서 요약<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">on_conversation_end</span>():</span><br><span class="line">    summary_memory.update_summary(runnable.message_history)</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h2 id="저장소-옵션"><a href="#저장소-옵션" class="headerlink" title="저장소 옵션"></a>저장소 옵션</h2><ol>
+<li>인메모리 ChatMessageHistory 사용</li>
+</ol>
+<ul>
+<li>메모리 내 메시지 기록 관리</li>
+<li>빠른 I&#x2F;O</li>
+<li>재기동 시 기록 삭제</li>
+</ul>
+<ol start="2">
+<li>RedisChatMessageHistory 사용</li>
+</ol>
+<ul>
+<li>Redis 사용, 메시지 기록 영구 저장 가능</li>
+</ul>
+<h2 id="장점"><a href="#장점" class="headerlink" title="장점"></a>장점</h2><ol>
+<li>고속 데이터 처리와 실시간 응답성</li>
+</ol>
+<ul>
+<li>Redis는 인메모리 데이터 저장소, 대화 데이터 I&#x2F;O 빠름.</li>
+<li>RunnableWithMessageHistory와 결합하여 사용자의 메시지를 실시간으로 Redis에 기록</li>
+</ul>
+<ol start="2">
+<li>대화 흐름 관리와 일관성 유지</li>
+</ol>
+<ul>
+<li>RunnableWithMessageHistory는 대화의 흐름을 자연스럽게 관리</li>
+<li>Redis에 기록된 이전 메시지들을 참조할 수 있어 대화의 일관성을 유지한다.</li>
+</ul>
+<ol start="3">
+<li>TTL을 통한 효율적 메모리 관리</li>
+</ol>
+<ul>
+<li>Redis에서는 대화 데이터를 일정 시간 동안만 유지하는 TTL(Time to Live) 설정이 가능.</li>
+<li>오래된 대화 데이터를 자동으로 삭제하고, 최신 대화에 필요한 정보만 유지할 수 있어 메모리 사용을 최적화.</li>
+<li>RunnableWithMessageHistory와 함께 활용하면 최신 대화 기록만을 기반으로 챗봇이 응답하도록 구성 가능.</li>
+</ul>
+<ol start="4">
+<li>주기적인 요약 저장으로 메모리 절약</li>
+</ol>
+<ul>
+<li>RunnableWithMessageHistory를 사용하여 대화 흐름이 길어지면 요약을 주기적으로 생성해 Redis에 저장</li>
+<li>불필요한 세부 메시지를 줄이고 요약본을 중심으로 대화 맥락을 유지.</li>
+</ul>
+<ol start="5">
+<li>확장성과 유연성</li>
+</ol>
+<ul>
+<li>Redis는 분산 환경에서 확장이 용이하므로, 대규모 사용자와의 대화 기록을 효과적으로 처리.</li>
+<li>RunnableWithMessageHistory를 통해 각 대화의 맥락을 관리하면서, Redis에 저장된 대화 기록을 다른 인스턴스나 마이크로서비스에서도 참조할 수 있어 유연한 확장이 가능.</li>
+</ul>
+<ol start="6">
+<li>대화 기록과 요약에 대한 손쉬운 접근성</li>
+</ol>
+<ul>
+<li>Redis는 다양한 데이터 구조(List, Hash, Set 등)를 지원하므로, RunnableWithMessageHistory와 함께 대화 기록을 효율적으로 구조화하여 저장 가능.</li>
+</ul>
+<h1 id="2안-RunnableWithMessageHistory-Redis"><a href="#2안-RunnableWithMessageHistory-Redis" class="headerlink" title="2안: RunnableWithMessageHistory + Redis"></a>2안: RunnableWithMessageHistory + Redis</h1><ol>
+<li>대화 기록 저장: RunnableWithMessageHistory의 메시지를 받아서 Redis에 저장한다.</li>
+<li>요약 저장: 주기적으로 요약을 업데이트하거나, 대화 종료 시 요약을 Redis에 저장한다.</li>
+</ol>
+<h2 id="Redis-데이터-구조-설계"><a href="#Redis-데이터-구조-설계" class="headerlink" title="Redis 데이터 구조 설계"></a>Redis 데이터 구조 설계</h2><ol>
+<li>대화별 메시지 리스트</li>
+</ol>
+<ul>
+<li>Key: conversation:{conversation_id}:messages</li>
+<li>Type: List</li>
+<li>설명<ul>
+<li>특정 대화의 메시지를 순서대로 저장.</li>
+<li>각 메시지는 JSON 형식으로 저장, sender, message, timestamp 정보 기록</li>
+<li>예시 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">RPUSH conversation:conv_001:messages </span><br><span class="line">     <span class="string">&#x27;&#123;&quot;sender&quot;: &quot;user&quot;, &quot;message&quot;: &quot;Hello!&quot;, &quot;timestamp&quot;: &quot;2024-10-30T10:00:00&quot;&#125;&#x27;</span></span><br><span class="line">     <span class="string">&#x27;&#123;&quot;sender&quot;: &quot;bot&quot;, &quot;message&quot;: &quot;Hi! How can I help you?&quot;, &quot;timestamp&quot;: &quot;2024-10-30T10:00:01&quot;&#125;&#x27;</span></span><br></pre></td></tr></table></figure>
+2.대화 요약</li>
+</ul>
+</li>
+<li>Key: conversation:{conversation_id}:summary</li>
+<li>Type: Hash</li>
+<li>설명<ul>
+<li>대화의 요약을 저장합니다. 요약을 주기적으로 업데이트.</li>
+<li>예시 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">HMSET conversation:conv_001:summary</span><br><span class="line">    <span class="string">&quot;summary&quot;</span> <span class="string">&quot;User asked about product details&quot;</span></span><br><span class="line">    <span class="string">&quot;timestamp&quot;</span> <span class="string">&quot;2024-10-30T10:15:00&quot;</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<ol start="3">
+<li>사용자별 대화 목록</li>
+</ol>
+<ul>
+<li>Key: user:{user_id}:conversations</li>
+<li>Type: List</li>
+<li>설명<ul>
+<li>사용자의 대화 ID를 시간순으로 저장.</li>
+<li>예시 - 사용자가 conv_001, conv_002, conv_003 대화를 순서대로 진행했다면<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">LPUSH user:<span class="number">123</span>:conversations conv_003 conv_002 conv_001</span><br></pre></td></tr></table></figure></li>
+<li>user:123:conversations 리스트를 조회하면 사용자가 진행한 대화 목록을 시간 순서대로 볼 수 있다.</li>
+<li>이 리스트는 사용자가 이전에 진행했던 대화 기록을 관리하거나, 특정 사용자의 과거 대화 요약을 불러올 때 유용</li>
+</ul>
+</li>
+</ul>
+<h1 id="전체-워크플로우-예시"><a href="#전체-워크플로우-예시" class="headerlink" title="전체 워크플로우 예시"></a>전체 워크플로우 예시</h1><ol>
+<li>사용자가 메시지를 보내면</li>
+</ol>
+<ul>
+<li>RunnableWithMessageHistory는 해당 메시지를 conversation:{conversation_id}:messages 리스트에 저장.</li>
+<li>이때 각 메시지는 sender, message, timestamp와 함께 JSON 형식으로 저장.</li>
+</ul>
+<ol start="2">
+<li>대화가 일정 수준으로 진행되면 요약을 업데이트:</li>
+</ol>
+<ul>
+<li>주기적으로 대화의 요약을 생성하여 conversation:{conversation_id}:summary 해시에 업데이트.</li>
+<li>요약은 전체 대화의 주요 내용이나 주제를 간략하게 표현하며, 대화가 종료될 때, 일정수준으로 길어지면 업데이트</li>
+</ul>
+<ol start="3">
+<li>사용자별 대화 기록 관리</li>
+</ol>
+<ul>
+<li>각 대화가 시작될 때마다 user:{user_id}:conversations 리스트에 해당 대화 ID를 추가.</li>
+<li>이를 통해 사용자의 전체 대화이력을 관리, 특정 사용자의 과거 대화 조회</li>
+</ul>
+<h1 id="References"><a href="#References" class="headerlink" title="References"></a>References</h1><p><a target="_blank" rel="noopener" href="https://wikidocs.net/235581">RunnableWithMessageHistory</a><br><a target="_blank" rel="noopener" href="https://python.langchain.com/docs/integrations/providers/">Providers|LangChain</a></p>
+</div><div class="article-licensing box"><div class="licensing-title"><p>멀티턴, 대화 요약를 위한 DB 설계</p><p><a href="https://hamin7.github.io/2024/11/03/LangChain-Memory-1/">https://hamin7.github.io/2024/11/03/LangChain-Memory-1/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>Author</h6><p>hamin</p></div></div><div class="level-item is-narrow"><div><h6>Posted on</h6><p>2024-11-03</p></div></div><div class="level-item is-narrow"><div><h6>Updated on</h6><p>2024-11-03</p></div></div><div class="level-item is-narrow"><div><h6>Licensed under</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/LangChain/">LangChain</a><a class="link-muted mr-2" rel="tag" href="/tags/LLM/">LLM</a></div><div class="notification is-danger">You need to set <code>install_url</code> to use ShareThis. Please set it in <code>_config.yml</code>.</div></article></div><div class="card"><div class="card-content"><h3 class="menu-label has-text-centered">Like this article? Support the author with</h3><div class="buttons is-centered"><a class="button donate" href="/" target="_blank" rel="noopener" data-type="afdian"><span class="icon is-small"><i class="fas fa-charging-station"></i></span><span>Afdian.net</span></a><a class="button donate" data-type="alipay"><span class="icon is-small"><i class="fab fa-alipay"></i></span><span>Alipay</span><span class="qrcode"><img src="/" alt="Alipay"></span></a><a class="button donate" href="/" target="_blank" rel="noopener" data-type="buymeacoffee"><span class="icon is-small"><i class="fas fa-coffee"></i></span><span>Buy me a coffee</span></a><a class="button donate" href="/" target="_blank" rel="noopener" data-type="patreon"><span class="icon is-small"><i class="fab fa-patreon"></i></span><span>Patreon</span></a><div class="notification is-danger">You forgot to set the <code>business</code> or <code>currency_code</code> for Paypal. Please set it in <code>_config.yml</code>.</div><a class="button donate" data-type="wechat"><span class="icon is-small"><i class="fab fa-weixin"></i></span><span>Wechat</span><span class="qrcode"><img src="/" alt="Wechat"></span></a></div></div></div><nav class="post-navigation mt-4 level is-mobile"><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2024/10/22/LangChain-Memory/"><span class="level-item">LangChain의 메모리 관리</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">Comments</h3><div class="notification is-danger">You forgot to set the <code>shortname</code> for Disqus. Please set it in <code>_config.yml</code>.</div></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar" src="/img/avatar.gif" alt="kahlua"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">kahlua</p><p class="is-size-6 is-block">kahlua&#039;s memos</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>Seoul</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">Posts</p><a href="/archives"><p class="title">48</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">Categories</p><a href="/categories"><p class="title">35</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">Tags</p><a href="/tags"><p class="title">22</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/ppoffice" target="_blank" rel="noopener">Follow</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/ppoffice"><i class="fab fa-github"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Facebook" href="https://facebook.com"><i class="fab fa-facebook"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Twitter" href="https://twitter.com"><i class="fab fa-twitter"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Dribbble" href="https://dribbble.com"><i class="fab fa-dribbble"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="RSS" href="/"><i class="fas fa-rss"></i></a></div></div></div><!--!--><div class="card widget" data-type="links"><div class="card-content"><div class="menu"><h3 class="menu-label">Links</h3><ul class="menu-list"><li><a class="level is-mobile" href="https://hexo.io" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">Hexo</span></span><span class="level-right"><span class="level-item tag">hexo.io</span></span></a></li><li><a class="level is-mobile" href="https://bulma.io" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">Bulma</span></span><span class="level-right"><span class="level-item tag">bulma.io</span></span></a></li></ul></div></div></div><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">Categories</h3><ul class="menu-list"><li><a class="level is-mobile" href="/categories/AI/"><span class="level-start"><span class="level-item">AI</span></span><span class="level-end"><span class="level-item tag">13</span></span></a><ul><li><a class="level is-mobile" href="/categories/AI/DeepLearning/"><span class="level-start"><span class="level-item">DeepLearning</span></span><span class="level-end"><span class="level-item tag">6</span></span></a></li><li><a class="level is-mobile" href="/categories/AI/JupyterLab/"><span class="level-start"><span class="level-item">JupyterLab</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/AI/MachineLearning/"><span class="level-start"><span class="level-item">MachineLearning</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile" href="/categories/AI/NLP/"><span class="level-start"><span class="level-item">NLP</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/AWS/"><span class="level-start"><span class="level-item">AWS</span></span><span class="level-end"><span class="level-item tag">15</span></span></a><ul><li><a class="level is-mobile" href="/categories/AWS/API-Gateway/"><span class="level-start"><span class="level-item">API Gateway</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile" href="/categories/AWS/Aurora/"><span class="level-start"><span class="level-item">Aurora</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/AWS/Cognito/"><span class="level-start"><span class="level-item">Cognito</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/AWS/EC2/"><span class="level-start"><span class="level-item">EC2</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li><li><a class="level is-mobile" href="/categories/AWS/EKS/"><span class="level-start"><span class="level-item">EKS</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/AWS/Lambda/"><span class="level-start"><span class="level-item">Lambda</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/AWS/Route53/"><span class="level-start"><span class="level-item">Route53</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/AWS/SageMaker/"><span class="level-start"><span class="level-item">SageMaker</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/Backend/"><span class="level-start"><span class="level-item">Backend</span></span><span class="level-end"><span class="level-item tag">1</span></span></a><ul><li><a class="level is-mobile" href="/categories/Backend/AWS/"><span class="level-start"><span class="level-item">AWS</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/Batch-Server/"><span class="level-start"><span class="level-item">Batch Server</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Book-Review/"><span class="level-start"><span class="level-item">Book Review</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Cron/"><span class="level-start"><span class="level-item">Cron</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Docker/"><span class="level-start"><span class="level-item">Docker</span></span><span class="level-end"><span class="level-item tag">1</span></span></a><ul><li><a class="level is-mobile" href="/categories/Docker/Linux/"><span class="level-start"><span class="level-item">Linux</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/Framework/"><span class="level-start"><span class="level-item">Framework</span></span><span class="level-end"><span class="level-item tag">1</span></span></a><ul><li><a class="level is-mobile" href="/categories/Framework/Python/"><span class="level-start"><span class="level-item">Python</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/LLM/"><span class="level-start"><span class="level-item">LLM</span></span><span class="level-end"><span class="level-item tag">5</span></span></a><ul><li><a class="level is-mobile" href="/categories/LLM/BERT/"><span class="level-start"><span class="level-item">BERT</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/LLM/LangChain/"><span class="level-start"><span class="level-item">LangChain</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/LLM/LangSmith/"><span class="level-start"><span class="level-item">LangSmith</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/Linux/"><span class="level-start"><span class="level-item">Linux</span></span><span class="level-end"><span class="level-item tag">1</span></span></a><ul><li><a class="level is-mobile" href="/categories/Linux/CLI/"><span class="level-start"><span class="level-item">CLI</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/LiteLLM/"><span class="level-start"><span class="level-item">LiteLLM</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Microsoft/"><span class="level-start"><span class="level-item">Microsoft</span></span><span class="level-end"><span class="level-item tag">2</span></span></a><ul><li><a class="level is-mobile" href="/categories/Microsoft/AI/"><span class="level-start"><span class="level-item">AI</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/Netflix/"><span class="level-start"><span class="level-item">Netflix</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Travel/"><span class="level-start"><span class="level-item">Travel</span></span><span class="level-end"><span class="level-item tag">2</span></span></a><ul><li><a class="level is-mobile" href="/categories/Travel/Japan/"><span class="level-start"><span class="level-item">Japan</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></li></ul></div></div></div><div class="card widget" data-type="recent-posts"><div class="card-content"><h3 class="menu-label">Recents</h3><article class="media"><div class="media-content"><p class="date"><time dateTime="2024-11-03T07:54:45.000Z">2024-11-03</time></p><p class="title"><a href="/2024/11/03/LangChain-Memory-1/">멀티턴, 대화 요약를 위한 DB 설계</a></p><p class="categories"><a href="/categories/LLM/">LLM</a> / <a href="/categories/LLM/LangChain/">LangChain</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2024-10-22T05:32:22.000Z">2024-10-22</time></p><p class="title"><a href="/2024/10/22/LangChain-Memory/">LangChain의 메모리 관리</a></p><p class="categories"><a href="/categories/LLM/">LLM</a> / <a href="/categories/LLM/LangChain/">LangChain</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2024-09-25T06:25:36.000Z">2024-09-25</time></p><p class="title"><a href="/2024/09/25/LangSmith/">LangSmith란</a></p><p class="categories"><a href="/categories/LLM/">LLM</a> / <a href="/categories/LLM/LangSmith/">LangSmith</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2024-09-25T05:52:14.000Z">2024-09-25</time></p><p class="title"><a href="/2024/09/25/Langchain/">Langchain이란?</a></p><p class="categories"><a href="/categories/LLM/">LLM</a> / <a href="/categories/LLM/LangChain/">LangChain</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2024-09-11T12:29:02.000Z">2024-09-11</time></p><p class="title"><a href="/2024/09/11/BatchServer/">Batch Server 구성하기</a></p><p class="categories"><a href="/categories/Batch-Server/">Batch Server</a></p></div></article></div></div><div class="card widget" data-type="archives"><div class="card-content"><div class="menu"><h3 class="menu-label">Archives</h3><ul class="menu-list"><li><a class="level is-mobile" href="/archives/2024/11/"><span class="level-start"><span class="level-item">November 2024</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/10/"><span class="level-start"><span class="level-item">October 2024</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/09/"><span class="level-start"><span class="level-item">September 2024</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/08/"><span class="level-start"><span class="level-item">August 2024</span></span><span class="level-end"><span class="level-item tag">9</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/07/"><span class="level-start"><span class="level-item">July 2024</span></span><span class="level-end"><span class="level-item tag">6</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/06/"><span class="level-start"><span class="level-item">June 2024</span></span><span class="level-end"><span class="level-item tag">7</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/05/"><span class="level-start"><span class="level-item">May 2024</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/04/"><span class="level-start"><span class="level-item">April 2024</span></span><span class="level-end"><span class="level-item tag">10</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/03/"><span class="level-start"><span class="level-item">March 2024</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile" href="/archives/2020/04/"><span class="level-start"><span class="level-item">April 2020</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2020/03/"><span class="level-start"><span class="level-item">March 2020</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></div></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">Tags</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/AI/"><span class="tag">AI</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/AWS/"><span class="tag">AWS</span><span class="tag">15</span></a></div><div class="control"><a class="tags has-addons" href="/tags/BERT/"><span class="tag">BERT</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Backend/"><span class="tag">Backend</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Batch-Server/"><span class="tag">Batch Server</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/CLI/"><span class="tag">CLI</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Cron/"><span class="tag">Cron</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/DeepLearning/"><span class="tag">DeepLearning</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Docker/"><span class="tag">Docker</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/GPU/"><span class="tag">GPU</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/JupyterLab/"><span class="tag">JupyterLab</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/LLM/"><span class="tag">LLM</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/LangChain/"><span class="tag">LangChain</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/LangSmith/"><span class="tag">LangSmith</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Linux/"><span class="tag">Linux</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/LiteLLM/"><span class="tag">LiteLLM</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/MachineLearning/"><span class="tag">MachineLearning</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Microsoft/"><span class="tag">Microsoft</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/NLP/"><span class="tag">NLP</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Netflix/"><span class="tag">Netflix</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Python/"><span class="tag">Python</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Travel/"><span class="tag">Travel</span><span class="tag">2</span></a></div></div></div></div></div><div class="card widget" data-type="subscribe-email"><div class="card-content"><div class="menu"><h3 class="menu-label">Subscribe for updates</h3><form action="https://feedburner.google.com/fb/a/mailverify" method="post" target="popupwindow" onsubmit="window.open(&#039;https://feedburner.google.com/fb/a/mailverify?uri=&#039;,&#039;popupwindow&#039;,&#039;scrollbars=yes,width=550,height=520&#039;);return true"><input type="hidden" value="" name="uri"><input type="hidden" name="loc" value="en_US"><div class="field has-addons"><div class="control has-icons-left is-expanded"><input class="input" name="email" type="email" placeholder="Email"><span class="icon is-small is-left"><i class="fas fa-envelope"></i></span></div><div class="control"><input class="button" type="submit" value="Subscribe"></div></div></form></div></div></div><div class="card widget"><div class="card-content"><div class="notification is-danger">You need to set <code>client_id</code> and <code>slot_id</code> to show this AD unit. Please set it in <code>_config.yml</code>.</div></div></div><div class="card widget" data-type="subscribe-email"><div class="card-content"><div class="menu"><h3 class="menu-label">follow.it</h3><form action="" method="post" target="_blank"><div class="field has-addons"><div class="control has-icons-left is-expanded"><input class="input" name="email" type="email" placeholder="Email"><span class="icon is-small is-left"><i class="fas fa-envelope"></i></span></div><div class="control"><input class="button" type="submit" value="Subscribe"></div></div></form></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/avatar.png" alt="Kahlua" height="28"></a><p class="is-size-7"><span>&copy; 2024 hamin</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p><p class="is-size-7">© 2019</p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("en");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="Back to top" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "This website uses cookies to improve your experience.",
+          dismiss: "Got it!",
+          allow: "Allow cookies",
+          deny: "Decline",
+          link: "Learn more",
+          policy: "Cookie Policy",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="Type something..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"Type something...","untitled":"(Untitled)","posts":"Posts","pages":"Pages","categories":"Categories","tags":"Tags"});
+        });</script></body></html>
