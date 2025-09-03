@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>AI-Model-Development - Kahlua</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="Kahlua"><meta name="msapplication-TileImage" content="/img/avatar.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Kahlua"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="AI 모델 개발 전 과정(문제정의, 데이터, 학습&amp;#x2F;평가, 배포&amp;#x2F;모니터링) 실무 가이드를 정리합니다."><meta property="og:type" content="blog"><meta property="og:title" content="AI-Model-Development"><meta property="og:url" content="https://hamin7.github.io/2025/09/04/AI-Model-Development/"><meta property="og:site_name" content="Kahlua"><meta property="og:description" content="AI 모델 개발 전 과정(문제정의, 데이터, 학습&amp;#x2F;평가, 배포&amp;#x2F;모니터링) 실무 가이드를 정리합니다."><meta property="og:locale" content="en_US"><meta property="og:image" content="https://hamin7.github.io/gallery/ai-model-development-cover.svg"><meta property="article:published_time" content="2025-09-03T15:04:40.000Z"><meta property="article:modified_time" content="2025-09-03T15:04:40.000Z"><meta property="article:author" content="Hamin Lee"><meta property="article:tag" content="AI"><meta property="article:tag" content="MLOps"><meta property="article:tag" content="ModelDevelopment"><meta property="twitter:card" content="summary"><meta property="twitter:image:src" content="https://hamin7.github.io/gallery/ai-model-development-cover.svg"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://hamin7.github.io/2025/09/04/AI-Model-Development/"},"headline":"AI-Model-Development","image":[],"datePublished":"2025-09-03T15:04:40.000Z","dateModified":"2025-09-03T15:04:40.000Z","author":{"@type":"Person","name":"Hamin Lee"},"publisher":{"@type":"Organization","name":"Kahlua","logo":{"@type":"ImageObject","url":"https://hamin7.github.io/img/avatar.png"}},"description":"AI 모델 개발 전 과정(문제정의, 데이터, 학습&#x2F;평가, 배포&#x2F;모니터링) 실무 가이드를 정리합니다."}</script><link rel="canonical" href="https://hamin7.github.io/2025/09/04/AI-Model-Development/"><link rel="icon" href="/img/avatar.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v6.0.0/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/atom-one-light.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><!--!--><!--!--><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/css/justifiedGallery.min.css"><!--!--><!--!--><style>.pace{-webkit-pointer-events:none;pointer-events:none;-webkit-user-select:none;-moz-user-select:none;user-select:none}.pace-inactive{display:none}.pace .pace-progress{background:#3273dc;position:fixed;z-index:2000;top:0;right:100%;width:100%;height:2px}</style><script src="https://cdn.jsdelivr.net/npm/pace-js@1.2.4/pace.min.js"></script><!--!--><!--!--><!-- hexo injector head_end start --><script>
+  (function () {
+      function switchTab() {
+          if (!location.hash) {
+            return;
+          }
+
+          const id = '#' + CSS.escape(location.hash.substring(1));
+          const $tabMenu = document.querySelector(`.tabs a[href="${id}"]`);
+          if (!$tabMenu) {
+            return;
+          }
+
+          const $tabMenuContainer = $tabMenu.parentElement.parentElement;
+          Array.from($tabMenuContainer.children).forEach($menu => $menu.classList.remove('is-active'));
+          Array.from($tabMenuContainer.querySelectorAll('a'))
+              .map($menu => document.getElementById($menu.getAttribute("href").substring(1)))
+              .forEach($content => $content.classList.add('is-hidden'));
+
+          if ($tabMenu) {
+              $tabMenu.parentElement.classList.add('is-active');
+          }
+          const $activeTab = document.querySelector(id);
+          if ($activeTab) {
+              $activeTab.classList.remove('is-hidden');
+          }
+      }
+      switchTab();
+      window.addEventListener('hashchange', switchTab, false);
+  })();
+  </script><!-- hexo injector head_end end --><meta name="generator" content="Hexo 7.1.1"></head><body class="is-3-column"><nav class="navbar navbar-main"><div class="container navbar-container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/avatar.png" alt="Kahlua" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a><a class="navbar-item search" title="Search" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-6-widescreen"><div class="card"><div class="card-image"><span class="image is-7by3"><img class="fill" src="/gallery/ai-model-development-cover.svg" alt="AI-Model-Development"></span></div><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item">Posted&nbsp;<time dateTime="2025-09-03T15:04:40.000Z" title="2025. 9. 4. 오전 12:04:40">2025-09-04</time></span><span class="level-item">Updated&nbsp;<time dateTime="2025-09-03T15:04:40.000Z" title="2025. 9. 4. 오전 12:04:40">2025-09-04</time></span><span class="level-item"> Hamin Lee </span><span class="level-item"><a class="link-muted" href="/categories/AI/">AI</a></span><span class="level-item">25 minutes read (About 3808 words)</span></div></div><h1 class="title is-3 is-size-4-mobile">AI-Model-Development</h1><div class="content"><p>AI 모델 개발 전 과정(문제정의, 데이터, 학습&#x2F;평가, 배포&#x2F;모니터링) 실무 가이드를 정리</p>
+<span id="more"></span>
+
+<h2 id="Self-Supervised-Learning"><a href="#Self-Supervised-Learning" class="headerlink" title="Self-Supervised Learning"></a>Self-Supervised Learning</h2><table>
+<thead>
+<tr>
+<th>기법 유형</th>
+<th>대표 방식</th>
+<th>예시 모델</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>예측 기반</td>
+<td>일부 마스킹&#x2F;다음 단어 예측</td>
+<td>BERT, GPT, MAE, wav2vec</td>
+</tr>
+<tr>
+<td>대비 학습</td>
+<td>positive&#x2F;negative 쌍 학습</td>
+<td>SimCLR, MoCo</td>
+</tr>
+<tr>
+<td>프록시 태스크</td>
+<td>회전&#x2F;컬러화&#x2F;위치 예측</td>
+<td>RotNet, Colorization</td>
+</tr>
+<tr>
+<td>비대비 학습</td>
+<td>teacher-student, self-distill</td>
+<td>BYOL, SimSiam, DINO</td>
+</tr>
+<tr>
+<td>멀티모달 학습</td>
+<td>modality 간 alignment</td>
+<td>CLIP, ALIGN, VideoBERT</td>
+</tr>
+</tbody></table>
+<p>핵심 포인트</p>
+<ul>
+<li>라벨 없이도 대규모 데이터에서 표현 학습을 수행 → 다운스트림 성능 향상</li>
+<li>동일 데이터의 두 뷰(증강) 설계가 중요(대비&#x2F;비대비 모두)</li>
+<li>멀티모달에서는 텍스트-이미지&#x2F;영상 정렬로 제로샷 성능 확보</li>
+</ul>
+<h3 id="손실-함수-설계-요약"><a href="#손실-함수-설계-요약" class="headerlink" title="손실 함수 설계 요약"></a>손실 함수 설계 요약</h3><ul>
+<li>대비 학습(Contrastive, 예: SimCLR)<ul>
+<li>InfoNCE: 같은 원본에서 나온 positive 쌍의 유사도는 극대화, 다른 샘플(negative)과는 최소화</li>
+<li>배치 내 모든 샘플을 negative로 활용(large batch가 유리), 또는 메모리 뱅크&#x2F;큐(MoCo)</li>
+</ul>
+</li>
+<li>비대비 학습(Non-Contrastive, 예: BYOL&#x2F;SimSiam&#x2F;DINO)<ul>
+<li>Teacher-Student 구조, stop-gradient로 collapse 방지</li>
+<li>예측기(projector&#x2F;predictor) 헤드가 student → teacher 표현을 추종하도록 학습</li>
+</ul>
+</li>
+<li>예측 기반(Masked&#x2F;Auto-Regressive)<ul>
+<li>MIM(Masked Image Modeling): MAE는 패치 마스킹 후 복원 L2</li>
+<li>MLM(Masked Language Modeling): [MASK] 토큰 복원 cross-entropy</li>
+</ul>
+</li>
+<li>멀티모달 정렬(CLIP)<ul>
+<li>Dual encoder 이미지&#x2F;텍스트 임베딩 간 대각 정렬을 temperature-scaled softmax로 양방향 최적화</li>
+</ul>
+</li>
+</ul>
+<h3 id="증강-Augmentation-설계-팁"><a href="#증강-Augmentation-설계-팁" class="headerlink" title="증강(Augmentation) 설계 팁"></a>증강(Augmentation) 설계 팁</h3><ul>
+<li>이미지: RandomResizedCrop, ColorJitter, GaussianBlur, HorizontalFlip, Solarize(특히 SimCLR&#x2F;SimSiam&#x2F;DINO)</li>
+<li>음성: 시간 마스킹&#x2F;주파수 마스킹(SpecAugment), 노이즈 주입, 피치 시프팅</li>
+<li>텍스트: 토큰 드롭&#x2F;셔플, 스팬 마스킹(T5 스타일), 동의어 치환은 의미 왜곡 주의</li>
+<li>비전-텍스트: 동일 개체&#x2F;장면을 보존하는 약한 증강 조합이 정렬 안정성에 유리</li>
+</ul>
+<h3 id="구현-체크리스트"><a href="#구현-체크리스트" class="headerlink" title="구현 체크리스트"></a>구현 체크리스트</h3><ul>
+<li>대규모 배치 또는 모멘텀 큐(MoCo v2)로 충분한 negatives 확보(대비 학습)</li>
+<li>EMA(Exponential Moving Average)로 teacher 업데이트(BYOL&#x2F;DINO)</li>
+<li>학습 초기 온도(temperature)와 학습률 warmup, cosine decay 스케줄 권장</li>
+<li>프로젝션 헤드 비선형(MLP, BN) 사용 시 수렴 안정화에 도움</li>
+</ul>
+<h3 id="언제-무엇을-쓸까"><a href="#언제-무엇을-쓸까" class="headerlink" title="언제 무엇을 쓸까"></a>언제 무엇을 쓸까</h3><ul>
+<li>라벨이 거의 없음: BYOL&#x2F;SimSiam&#x2F;DINO&#x2F;MAE로 표현 사전학습 후 파인튜닝</li>
+<li>제로샷&#x2F;텍스트 질의 필요: CLIP류 멀티모달 정렬</li>
+<li>다운스트림이 분류&#x2F;검색: Contrastive(InfoNCE) 임베딩이 전이 성능 우수</li>
+</ul>
+<h3 id="흔한-함정과-대응"><a href="#흔한-함정과-대응" class="headerlink" title="흔한 함정과 대응"></a>흔한 함정과 대응</h3><ul>
+<li>Collapse(표현 상수화): stop-grad, predictor, centering(예: DINO)로 완화</li>
+<li>과한 강증강으로 의미 소실: 약한+강한 증강을 균형 있게 혼합, 뷰간 일관성 유지</li>
+<li>작은 배치로 성능 저하: gradient accumulation, MoCo 큐, 더 긴 학습으로 보완</li>
+</ul>
+<h2 id="자연어-처리-모델-NLP"><a href="#자연어-처리-모델-NLP" class="headerlink" title="자연어 처리 모델 (NLP)"></a>자연어 처리 모델 (NLP)</h2><ul>
+<li><p>GPT (Generative Pre-trained Transformer)</p>
+<ul>
+<li>목적: 다음 토큰(단어) 예측(Autoregressive LM)</li>
+<li>특징: 문장 생성&#x2F;요약&#x2F;대화 등에 강함, 좌→우 단방향 컨텍스트</li>
+<li>학습: 대규모 코퍼스 사전학습 → 지시튜닝&#x2F;대화튜닝&#x2F;정렬(RLHF) 강화</li>
+</ul>
+</li>
+<li><p>BERT (Bidirectional Encoder Representations from Transformers)</p>
+<ul>
+<li>목적: 마스킹된 토큰 복원(MLM) + NSP(두 문장이 연속인지)</li>
+<li>특징: 양방향 컨텍스트 인코딩, 분류&#x2F;검색&#x2F;NER 등 인코더 태스크에 강함</li>
+<li>변형: RoBERTa(노 NSP, 긴 학습), ALBERT(파라미터 공유), DeBERTa(상대 위치 등)</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>상세 설명과 예시는 문제 해설 참고</p>
+</blockquote>
+<h2 id="Fine-Tuning-전략"><a href="#Fine-Tuning-전략" class="headerlink" title="Fine-Tuning 전략"></a>Fine-Tuning 전략</h2><h3 id="Full-Fine-Tuning"><a href="#Full-Fine-Tuning" class="headerlink" title="Full Fine-Tuning"></a>Full Fine-Tuning</h3><ul>
+<li>개념: 모델 모든 파라미터를 태스크 데이터로 재학습</li>
+<li>장점: 특정 태스크에 최적화된 최고 성능</li>
+<li>단점: 초대형 모델에서 비효율(메모리&#x2F;시간), 저장·재사용 어려움</li>
+</ul>
+<h3 id="LoRA-Low-Rank-Adaptation"><a href="#LoRA-Low-Rank-Adaptation" class="headerlink" title="LoRA (Low-Rank Adaptation)"></a>LoRA (Low-Rank Adaptation)</h3><ul>
+<li>개념: 가중치 업데이트를 저랭크 행렬로 근사, 추가 파라미터만 학습</li>
+<li>장점: 성능 유지하며 메모리·연산량 절약, 모듈 병합&#x2F;재사용 용이</li>
+<li>단점: 일부 태스크에서 Full FT 대비 소폭 성능 손해 가능</li>
+</ul>
+<h3 id="PEFT-Parameter-Efficient-Fine-Tuning"><a href="#PEFT-Parameter-Efficient-Fine-Tuning" class="headerlink" title="PEFT (Parameter-Efficient Fine-Tuning)"></a>PEFT (Parameter-Efficient Fine-Tuning)</h3><ul>
+<li>개념: 전체가 아닌 일부 파라미터만 업데이트하는 기법 묶음</li>
+<li>포함: LoRA, Adapter, Prompt&#x2F;Prefix Tuning, BitFit 등</li>
+<li>장점: 메모리&#x2F;연산 효율 극대화, LLM 실무에서 표준화 추세</li>
+<li>활용: HuggingFace peft 라이브러리로 다양한 방법 제공</li>
+</ul>
+<h3 id="Fine-Tuning-기법-비교"><a href="#Fine-Tuning-기법-비교" class="headerlink" title="Fine-Tuning 기법 비교"></a>Fine-Tuning 기법 비교</h3><table>
+<thead>
+<tr>
+<th>기법</th>
+<th>특징 &#x2F; 방식</th>
+<th>장점</th>
+<th>단점</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Full Fine-Tuning</td>
+<td>모델 전체 파라미터를 새 데이터에 맞게 업데이트</td>
+<td>특정 도메인에 최적화된 최고 성능</td>
+<td>연산량·메모리 소모 매우 큼, 데이터 많이 필요</td>
+</tr>
+<tr>
+<td>Feature-based</td>
+<td>사전학습 모델을 Feature Extractor로 사용, 최종 분류기만 학습</td>
+<td>빠르고 단순, 데이터 적을 때 효과적</td>
+<td>모델 전체를 활용하지 않아 성능 제한</td>
+</tr>
+<tr>
+<td>Adapter Tuning</td>
+<td>각 Transformer 블록에 작은 Adapter Layer 삽입 후 해당 모듈만 학습</td>
+<td>여러 태스크 동시 적용 가능, 효율적</td>
+<td>Full FT 대비 약간 성능 손실</td>
+</tr>
+<tr>
+<td>Prompt Tuning</td>
+<td>입력 앞에 학습 가능한 가상 토큰(프롬프트) 추가</td>
+<td>초경량, 대형 모델에도 효율적</td>
+<td>태스크 복잡할수록 성능 불안정</td>
+</tr>
+<tr>
+<td>Prefix Tuning</td>
+<td>Attention Key&#x2F;Value에 학습 가능한 Prefix 추가</td>
+<td>대형 LLM에 적합, 다양한 태스크 적용 가능</td>
+<td>Full FT보다 성능 낮을 수 있음</td>
+</tr>
+<tr>
+<td>LoRA</td>
+<td>가중치 업데이트를 저랭크 행렬로 근사해 추가 파라미터만 학습</td>
+<td>성능·효율 균형, 여러 LoRA 모듈 결합 용이</td>
+<td>일부 복잡 태스크에서 성능 한계</td>
+</tr>
+<tr>
+<td>BitFit</td>
+<td>모델의 Bias 항목만 학습</td>
+<td>극도로 가벼움, 빠른 학습</td>
+<td>성능 제한적, 단순 태스크에 적합</td>
+</tr>
+<tr>
+<td>PEFT</td>
+<td>Parameter-Efficient FT 기법들의 총칭(LoRA&#x2F;Adapter&#x2F;Prompt 등)</td>
+<td>대규모 LLM 실무 표준, 효율성 극대화</td>
+<td>Full FT보다 성능 약간 낮을 수 있음</td>
+</tr>
+<tr>
+<td>QLoRA</td>
+<td>모델 가중치 4&#x2F;8bit 양자화 후 LoRA 적용</td>
+<td>저자원 환경에서도 초대형 모델 FT 가능, VRAM 절약</td>
+<td>양자화로 인한 미세한 성능 손실 가능</td>
+</tr>
+</tbody></table>
+<h2 id="CAM-모델"><a href="#CAM-모델" class="headerlink" title="CAM 모델"></a>CAM 모델</h2><p>CAM(Class Activation Map)은 CNN 분류 모델이 특정 클래스를 예측할 때, 해당 클래스와 관련된 중요한 이미지 영역을 시각화하는 기법입니다.</p>
+<blockquote>
+<p>상세내용은 문제 해설 참고</p>
+</blockquote>
+<h3 id="기법-비교"><a href="#기법-비교" class="headerlink" title="기법 비교"></a>기법 비교</h3><table>
+<thead>
+<tr>
+<th>기법</th>
+<th>핵심 아이디어</th>
+<th>장점</th>
+<th>한계 &#x2F; 단점</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CAM</td>
+<td>CNN Feature Map × FC 가중치로 클래스별 중요 영역 시각화</td>
+<td>간단·직관적, 초기 CNN 해석 기법</td>
+<td>GAP(Global Avg Pooling) 구조 필요 → 특정 네트워크에만 적용</td>
+</tr>
+<tr>
+<td>Grad-CAM</td>
+<td>Gradient + Feature Map으로 중요 영역 강조</td>
+<td>구조 제약 거의 없음(ResNet&#x2F; Inception&#x2F; ViT 등)</td>
+<td>해상도 낮고 객체 경계가 흐림</td>
+</tr>
+<tr>
+<td>Score-CAM</td>
+<td>Gradient 대신 모델 출력 Score 기반으로 중요 영역 산출</td>
+<td>Gradient 의존 제거 → 더 안정적 결과</td>
+<td>연산 비용 큼(출력 반복 계산 필요)</td>
+</tr>
+</tbody></table>
+<h2 id="블랙박스-모델"><a href="#블랙박스-모델" class="headerlink" title="블랙박스 모델"></a>블랙박스 모델</h2><p>블랙박스 모델은 내부 의사결정 과정을 직접 해석하기 어려운 고복잡도 모델(딥러닝, 앙상블 등)을 의미합니다. 실무에서는 높은 정확도와 함께 사후 설명(post-hoc explainability)을 병행합니다.</p>
+<h3 id="화이트박스-vs-블랙박스-비교"><a href="#화이트박스-vs-블랙박스-비교" class="headerlink" title="화이트박스 vs 블랙박스 비교"></a>화이트박스 vs 블랙박스 비교</h3><table>
+<thead>
+<tr>
+<th>구분</th>
+<th>화이트박스 모델 (White-Box)</th>
+<th>블랙박스 모델 (Black-Box)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>정의</td>
+<td>내부 동작을 사람이 쉽게 이해</td>
+<td>내부 동작 불투명, 해석 어려움</td>
+</tr>
+<tr>
+<td>대표 모델</td>
+<td>선형&#x2F;로지스틱 회귀, 의사결정트리, 규칙기반</td>
+<td>딥러닝(CNN&#x2F;RNN&#x2F;Transformer), 앙상블(RF&#x2F;XGBoost), 비선형 SVM</td>
+</tr>
+<tr>
+<td>해석 가능성</td>
+<td>높음 → 예측 근거 설명 용이</td>
+<td>낮음 → 입출력만 관찰 가능</td>
+</tr>
+<tr>
+<td>예측 성능</td>
+<td>단순 데이터에 충분</td>
+<td>복잡 패턴·대규모 데이터에 강력</td>
+</tr>
+<tr>
+<td>복잡도</td>
+<td>낮음(식&#x2F;규칙 기반)</td>
+<td>높음(수백만~수십억 파라미터)</td>
+</tr>
+<tr>
+<td>사용 사례</td>
+<td>규제&#x2F;의료&#x2F;정책 등 설명 책임 중요</td>
+<td>비전&#x2F;음성&#x2F;NLP&#x2F;자율주행 등 정확도 중시</td>
+</tr>
+<tr>
+<td>장점</td>
+<td>투명성, 신뢰성</td>
+<td>높은 정확도, 복잡 데이터 처리</td>
+</tr>
+<tr>
+<td>단점</td>
+<td>복잡 데이터에서 성능 한계</td>
+<td>해석 곤란, 편향·책임성 이슈</td>
+</tr>
+</tbody></table>
+<h3 id="블랙박스-해석-사후-설명-기법"><a href="#블랙박스-해석-사후-설명-기법" class="headerlink" title="블랙박스 해석(사후 설명) 기법"></a>블랙박스 해석(사후 설명) 기법</h3><ul>
+<li>CAM&#x2F;Grad-CAM&#x2F;Score-CAM: 비전 모델 국소 중요도 시각화(상단 섹션 참조)</li>
+<li>SHAP: 샘플 수준 피처 기여도(일관성·지역선형 근사)</li>
+<li>LIME: 국소 영역 선형근사로 설명(간단, 안정성은 데이터&#x2F;커널 의존)</li>
+<li>Integrated Gradients: 입력→baseline 경로 적분으로 기여도 산출</li>
+<li>Occlusion&#x2F;Feature Ablation: 피처&#x2F;영역 마스킹 후 성능 변화 관찰</li>
+<li>Counterfactuals: 최소 변경으로 예측이 바뀌는 사례 생성(what-if 분석)</li>
+</ul>
+<h3 id="운영-시-고려사항"><a href="#운영-시-고려사항" class="headerlink" title="운영 시 고려사항"></a>운영 시 고려사항</h3><ul>
+<li>데이터 편향·드리프트 모니터링, 모델카드&#x2F;데이터시트로 문서화</li>
+<li>설명 요청·이의제기 절차, 영향평가(금융·의료 등 규제 대응)</li>
+<li>설명 가능성 vs 성능 트레이드오프: 규제 영역은 혼합 접근(화이트+블랙)</li>
+</ul>
+<h2 id="Surrogate-Model"><a href="#Surrogate-Model" class="headerlink" title="Surrogate Model"></a>Surrogate Model</h2><p>Surrogate Model은 복잡한 블랙박스 모델을 근사(approximate)하여 설명력을 제공하는 간단하고 해석 가능한 모델입니다. 블랙박스(예: 딥러닝)에 다양한 입력을 넣어 출력(label)을 수집하고, 이 입력-출력 쌍으로 Decision Tree, Linear&#x2F;Logistic Regression 등 화이트박스 모델을 학습해 블랙박스의 예측 경향을 사람 친화적으로 설명합니다.</p>
+<ul>
+<li>목적: 블랙박스의 전역&#x2F;국소 의사결정 경향을 해석 가능한 규칙&#x2F;계수로 표현</li>
+<li>전역(Global) 대체: 전체 입력 공간에서 근사(예: 트리 기반 규칙)</li>
+<li>국소(Local) 대체: 특정 샘플 주변에서 근사(LIME의 국소 선형 모델 등)</li>
+<li>주의: Surrogate의 설명은 근사치이며, 분포 밖(out-of-distribution)에서는 신뢰하기 어려움</li>
+</ul>
+<h2 id="Linear-Regression-vs-Logistic-Regression"><a href="#Linear-Regression-vs-Logistic-Regression" class="headerlink" title="Linear Regression vs Logistic Regression"></a>Linear Regression vs Logistic Regression</h2><table>
+<thead>
+<tr>
+<th>구분</th>
+<th>Linear Regression (선형 회귀)</th>
+<th>Logistic Regression (로지스틱 회귀)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>목적</td>
+<td>연속형 값 예측(회귀)</td>
+<td>범주형 값 예측(이진&#x2F;다중 분류)</td>
+</tr>
+<tr>
+<td>출력값 범위</td>
+<td>−∞ ~ +∞(실수)</td>
+<td>0 ~ 1(확률)</td>
+</tr>
+<tr>
+<td>활용 함수</td>
+<td>단순 선형결합</td>
+<td>시그모이드(이진) &#x2F; 소프트맥스(다중)</td>
+</tr>
+<tr>
+<td>손실 함수</td>
+<td>MSE(Mean Squared Error)</td>
+<td>로그 손실(Log Loss, Cross-Entropy)</td>
+</tr>
+<tr>
+<td>활용 예시</td>
+<td>집값, 온도, 매출 예측</td>
+<td>스팸 분류, 질병 진단, 이탈 예측</td>
+</tr>
+</tbody></table>
+<h2 id="Learning-Curve"><a href="#Learning-Curve" class="headerlink" title="Learning Curve"></a>Learning Curve</h2><blockquote>
+<p>그림 예시는 문제 참고</p>
+</blockquote>
+<h3 id="Underfitting-과소적합-개선"><a href="#Underfitting-과소적합-개선" class="headerlink" title="Underfitting(과소적합) 개선"></a>Underfitting(과소적합) 개선</h3><ul>
+<li>모델 복잡도 ↑: 더 큰 신경망, 더 많은 파라미터</li>
+<li>특징 엔지니어링 강화: 더 정보력 높은 입력 feature</li>
+<li>학습 더 오래: Epoch 증가, Learning rate 스케줄 조정</li>
+</ul>
+<h3 id="Overfitting-과적합-완화"><a href="#Overfitting-과적합-완화" class="headerlink" title="Overfitting(과적합) 완화"></a>Overfitting(과적합) 완화</h3><ul>
+<li>데이터 늘리기: 추가 수집 또는 데이터 증강(Data Augmentation)</li>
+<li>정규화 강화: Dropout, L2&#x2F;L1, Early Stopping</li>
+<li>모델 단순화: 레이어&#x2F;노드 수 축소</li>
+<li>앙상블: 여러 모델 결합으로 일반화 성능 ↑</li>
+<li>교차검증(CV): 일반화 잘 되는 하이퍼파라미터 선택</li>
+</ul>
+<p>학습곡선 해석 팁</p>
+<ul>
+<li>훈련·검증 오류가 모두 높음 → 과소적합</li>
+<li>훈련 낮고 검증 높음 → 과적합(데이터&#x2F;정규화&#x2F;단순화&#x2F;증강 검토)</li>
+</ul>
+<h2 id="AI-모델-평가-Confusion-Matrix"><a href="#AI-모델-평가-Confusion-Matrix" class="headerlink" title="AI 모델 평가(Confusion Matrix)"></a>AI 모델 평가(Confusion Matrix)</h2><table>
+<thead>
+<tr>
+<th></th>
+<th>실제 Positive</th>
+<th>실제 Negative</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>예측 Positive</td>
+<td>TP</td>
+<td>FP</td>
+</tr>
+<tr>
+<td>예측 Negative</td>
+<td>FN</td>
+<td>TN</td>
+</tr>
+</tbody></table>
+<ul>
+<li>정확도(Accuracy): (TP + TN) &#x2F; (TP + TN + FP + FN)</li>
+<li>정밀도(Precision): TP &#x2F; (TP + FP)</li>
+<li>재현율(Recall, Sensitivity): TP &#x2F; (TP + FN)</li>
+<li>특이도(Specificity): TN &#x2F; (TN + FP)</li>
+<li>F1-score: 2 × (Precision × Recall) &#x2F; (Precision + Recall)</li>
+</ul>
+<p>문제 요구 지표 확인 필수. 예: 14번 문제는 Recall이 정답.</p>
+<h3 id="ROC-AUC-PR-AUC"><a href="#ROC-AUC-PR-AUC" class="headerlink" title="ROC-AUC &#x2F; PR-AUC"></a>ROC-AUC &#x2F; PR-AUC</h3><ul>
+<li>ROC-AUC<ul>
+<li>ROC 곡선: FPR(False Positive Rate) &#x3D; FP&#x2F;(FP+TN) vs TPR(Recall)</li>
+<li>AUC는 임계값 전 범위에서의 평균 성능을 요약. 클래스 불균형이 심하지 않을 때 적합</li>
+</ul>
+</li>
+<li>PR-AUC<ul>
+<li>PR 곡선: Precision vs Recall. 양성 클래스가 희소할수록 모델 구분력을 더 잘 반영</li>
+<li>극단적 불균형(예: 사기·고장 예측)에서는 PR-AUC 사용 권장</li>
+</ul>
+</li>
+<li>선택 가이드: 불균형 심함 → PR-AUC, 그렇지 않음 → ROC-AUC. 두 지표를 함께 보고 trade-off 판단</li>
+</ul>
+<h3 id="임계값-Threshold-조정-전략"><a href="#임계값-Threshold-조정-전략" class="headerlink" title="임계값(Threshold) 조정 전략"></a>임계값(Threshold) 조정 전략</h3><ul>
+<li>비즈니스 비용 기반 최적화: 비용행렬(C_FP, C_FN)을 정의해 기대비용 최소화 임계값 선택</li>
+<li>고정 재현율&#x2F;정밀도 제약: 예) Recall ≥ 0.9를 만족하는 최소 임계값 선택</li>
+<li>Youden’s J: J &#x3D; TPR − FPR 최대화 임계값(의료 진단 등에서 사용)</li>
+<li>KS 통계량: 누적 TPR − 누적 FPR 최대점(신용평가)</li>
+<li>검증셋&#x2F;교차검증 기반 서치: Grid search로 임계값을 스윕하고 목표 지표 최대화</li>
+<li>캘리브레이션 후 조정: Platt scaling&#x2F;Isotonic으로 확률 보정 후 임계값 적용</li>
+</ul>
+<h2 id="Class-불균형-해소"><a href="#Class-불균형-해소" class="headerlink" title="Class 불균형 해소"></a>Class 불균형 해소</h2><h3 id="접근-방식별-요약"><a href="#접근-방식별-요약" class="headerlink" title="접근 방식별 요약"></a>접근 방식별 요약</h3><table>
+<thead>
+<tr>
+<th>접근 방식</th>
+<th>방법</th>
+<th>장점</th>
+<th>단점</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>데이터 수준</td>
+<td>언더샘플링(Under-Sampling)</td>
+<td>간단, 빠름</td>
+<td>정보 손실 가능</td>
+</tr>
+<tr>
+<td>데이터 수준</td>
+<td>오버샘플링(SMOTE, ADASYN 등)</td>
+<td>소수 클래스 보강, 다양성 증가</td>
+<td>과적합 위험</td>
+</tr>
+<tr>
+<td>데이터 수준</td>
+<td>데이터 증강(Augmentation)</td>
+<td>소수 클래스 다양성 확보</td>
+<td>도메인 지식 필요</td>
+</tr>
+<tr>
+<td>알고리즘 수준</td>
+<td>클래스 가중치(Class Weighting)</td>
+<td>단순 적용 가능, 효과적</td>
+<td>가중치 튜닝 필요</td>
+</tr>
+<tr>
+<td>알고리즘 수준</td>
+<td>Cost-Sensitive Learning</td>
+<td>잘못 예측 비용 반영</td>
+<td>비용 설계 복잡</td>
+</tr>
+<tr>
+<td>앙상블</td>
+<td>EasyEnsemble, Balanced RF</td>
+<td>강력한 성능, 불균형 완화</td>
+<td>계산 비용 증가</td>
+</tr>
+<tr>
+<td>손실 함수</td>
+<td>Weighted Cross-Entropy</td>
+<td>클래스별 가중치 반영, 단순·효과적</td>
+<td>가중치 선택 어려움</td>
+</tr>
+<tr>
+<td>손실 함수</td>
+<td>Focal Loss</td>
+<td>Hard example 집중, 희귀 이벤트 강함</td>
+<td>α, γ 튜닝 필요</td>
+</tr>
+<tr>
+<td>평가지표</td>
+<td>F1, ROC-AUC, PR-AUC</td>
+<td>불균형에 적합한 평가</td>
+<td>Accuracy보다 해석 복잡</td>
+</tr>
+</tbody></table>
+<p>실무 팁</p>
+<ul>
+<li>우선 클래스 분포·오염 확인 → 데이터 질 개선 우선</li>
+<li>소수 클래스 충분치 않으면 증강&#x2F;합성 + 적절한 지표(PR-AUC&#x2F;F1) 사용</li>
+<li>비용민감·가중치·임계값 조정을 함께 튜닝(그리드&#x2F;랜덤&#x2F;베이지안)</li>
+</ul>
+<h2 id="HyperParameter-Tuning"><a href="#HyperParameter-Tuning" class="headerlink" title="HyperParameter Tuning"></a>HyperParameter Tuning</h2><p>모델 학습에서 사람이 사전에 정해야 하는 값(데이터로 직접 학습되지 않음).</p>
+<ul>
+<li>딥러닝: Learning Rate, Batch Size, Epoch, Dropout, Optimizer 등</li>
+<li>트리 기반: max_depth, learning_rate, min_samples_split, n_estimators 등</li>
+<li>SVM: C, γ, Kernel</li>
+</ul>
+<p>문제 유형 주의: 국어형 설명 문항(정의&#x2F;장단점&#x2F;적용 상황) 확인</p>
+<h3 id="1-Grid-Search"><a href="#1-Grid-Search" class="headerlink" title="(1) Grid Search"></a>(1) Grid Search</h3><ul>
+<li>후보를 격자(Grid)로 전수 조합해 탐색</li>
+<li>장점: 단순, 재현 쉬움</li>
+<li>단점: 차원↑ 시 계산량 폭증, 비효율적</li>
+</ul>
+<h3 id="2-Random-Search"><a href="#2-Random-Search" class="headerlink" title="(2) Random Search"></a>(2) Random Search</h3><ul>
+<li>범위에서 무작위 샘플링으로 탐색</li>
+<li>장점: 고차원에서 효율적, 빠른 베이스라인</li>
+<li>단점: 최적 보장 어려움, 운에 민감</li>
+</ul>
+<h3 id="3-Bayesian-Optimization"><a href="#3-Bayesian-Optimization" class="headerlink" title="(3) Bayesian Optimization"></a>(3) Bayesian Optimization</h3><ul>
+<li>과거 결과로 확률모형(GP 등)을 구축 → 기대 개선이 큰 지점을 선택</li>
+<li>장점: 시도 수 대비 효율 높음</li>
+<li>단점: 구현 복잡, 계산량 있음</li>
+</ul>
+<p>보완 전략</p>
+<ul>
+<li>교차검증으로 일반화 성능 평가, 조기중단·러닝레이트 스케줄 병행</li>
+<li>하이브리드: 랜덤 탐색으로 거친 영역 탐색 → 베이지안으로 미세 조정</li>
+</ul>
+</div><div class="article-licensing box"><div class="licensing-title"><p>AI-Model-Development</p><p><a href="https://hamin7.github.io/2025/09/04/AI-Model-Development/">https://hamin7.github.io/2025/09/04/AI-Model-Development/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>Author</h6><p>Hamin Lee</p></div></div><div class="level-item is-narrow"><div><h6>Posted on</h6><p>2025-09-04</p></div></div><div class="level-item is-narrow"><div><h6>Updated on</h6><p>2025-09-04</p></div></div><div class="level-item is-narrow"><div><h6>Licensed under</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/AI/">AI</a><a class="link-muted mr-2" rel="tag" href="/tags/MLOps/">MLOps</a><a class="link-muted mr-2" rel="tag" href="/tags/ModelDevelopment/">ModelDevelopment</a></div><div class="notification is-danger">You need to set <code>install_url</code> to use ShareThis. Please set it in <code>_config.yml</code>.</div></article></div><div class="card"><div class="card-content"><h3 class="menu-label has-text-centered">Like this article? Support the author with</h3><div class="buttons is-centered"><a class="button donate" href="/" target="_blank" rel="noopener" data-type="afdian"><span class="icon is-small"><i class="fas fa-charging-station"></i></span><span>Afdian.net</span></a><a class="button donate" data-type="alipay"><span class="icon is-small"><i class="fab fa-alipay"></i></span><span>Alipay</span><span class="qrcode"><img src="/" alt="Alipay"></span></a><a class="button donate" href="/" target="_blank" rel="noopener" data-type="buymeacoffee"><span class="icon is-small"><i class="fas fa-coffee"></i></span><span>Buy me a coffee</span></a><a class="button donate" href="/" target="_blank" rel="noopener" data-type="patreon"><span class="icon is-small"><i class="fab fa-patreon"></i></span><span>Patreon</span></a><div class="notification is-danger">You forgot to set the <code>business</code> or <code>currency_code</code> for Paypal. Please set it in <code>_config.yml</code>.</div><a class="button donate" data-type="wechat"><span class="icon is-small"><i class="fab fa-weixin"></i></span><span>Wechat</span><span class="qrcode"><img src="/" alt="Wechat"></span></a></div></div></div><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2025/09/04/AI-System-Builiding-and-Operating/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">AI-System-Builiding-and-Operating</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2025/08/29/AI-Data-Preprocessing/"><span class="level-item">AI 데이터 전처리</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><div class="card"><div class="card-content"><h3 class="title is-5">Comments</h3><div class="notification is-danger">You forgot to set the <code>shortname</code> for Disqus. Please set it in <code>_config.yml</code>.</div></div></div></div><div class="column column-left is-4-tablet is-4-desktop is-3-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar" src="/img/avatar.gif" alt="kahlua"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">kahlua</p><p class="is-size-6 is-block">kahlua&#039;s memos</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>Seoul</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">Posts</p><a href="/archives"><p class="title">101</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">Categories</p><a href="/categories"><p class="title">78</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">Tags</p><a href="/tags"><p class="title">101</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/hamin7" target="_blank" rel="noopener">Follow</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/hamin7"><i class="fab fa-github"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Facebook" href="https://facebook.com"><i class="fab fa-facebook"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Twitter" href="https://twitter.com"><i class="fab fa-twitter"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Dribbble" href="https://dribbble.com"><i class="fab fa-dribbble"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="RSS" href="/"><i class="fas fa-rss"></i></a></div></div></div><!--!--><div class="card widget" data-type="links"><div class="card-content"><div class="menu"><h3 class="menu-label">Links</h3><ul class="menu-list"><li><a class="level is-mobile" href="https://hexo.io" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">Hexo</span></span><span class="level-right"><span class="level-item tag">hexo.io</span></span></a></li><li><a class="level is-mobile" href="https://bulma.io" target="_blank" rel="noopener"><span class="level-left"><span class="level-item">Bulma</span></span><span class="level-right"><span class="level-item tag">bulma.io</span></span></a></li></ul></div></div></div><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">Categories</h3><ul class="menu-list"><li><a class="level is-mobile" href="/categories/AI/"><span class="level-start"><span class="level-item">AI</span></span><span class="level-end"><span class="level-item tag">20</span></span></a><ul><li><a class="level is-mobile" href="/categories/AI/DeepLearning/"><span class="level-start"><span class="level-item">DeepLearning</span></span><span class="level-end"><span class="level-item tag">6</span></span></a></li><li><a class="level is-mobile" href="/categories/AI/JupyterLab/"><span class="level-start"><span class="level-item">JupyterLab</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/AI/MLOps/"><span class="level-start"><span class="level-item">MLOps</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/AI/MachineLearning/"><span class="level-start"><span class="level-item">MachineLearning</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile" href="/categories/AI/NLP/"><span class="level-start"><span class="level-item">NLP</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/AWS/"><span class="level-start"><span class="level-item">AWS</span></span><span class="level-end"><span class="level-item tag">18</span></span></a><ul><li><a class="level is-mobile" href="/categories/AWS/API-Gateway/"><span class="level-start"><span class="level-item">API Gateway</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile" href="/categories/AWS/Aurora/"><span class="level-start"><span class="level-item">Aurora</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/AWS/Cognito/"><span class="level-start"><span class="level-item">Cognito</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/AWS/EC2/"><span class="level-start"><span class="level-item">EC2</span></span><span class="level-end"><span class="level-item tag">6</span></span></a></li><li><a class="level is-mobile" href="/categories/AWS/EKS/"><span class="level-start"><span class="level-item">EKS</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/AWS/Lambda/"><span class="level-start"><span class="level-item">Lambda</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/categories/AWS/Route53/"><span class="level-start"><span class="level-item">Route53</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/AWS/SageMaker/"><span class="level-start"><span class="level-item">SageMaker</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/Agent/"><span class="level-start"><span class="level-item">Agent</span></span><span class="level-end"><span class="level-item tag">2</span></span></a><ul><li><a class="level is-mobile" href="/categories/Agent/Document/"><span class="level-start"><span class="level-item">Document</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/Algorithm/"><span class="level-start"><span class="level-item">Algorithm</span></span><span class="level-end"><span class="level-item tag">4</span></span></a><ul><li><a class="level is-mobile" href="/categories/Algorithm/Sort/"><span class="level-start"><span class="level-item">Sort</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/Backend/"><span class="level-start"><span class="level-item">Backend</span></span><span class="level-end"><span class="level-item tag">15</span></span></a><ul><li><a class="level is-mobile" href="/categories/Backend/AWS/"><span class="level-start"><span class="level-item">AWS</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Backend/DevOps/"><span class="level-start"><span class="level-item">DevOps</span></span><span class="level-end"><span class="level-item tag">5</span></span></a><ul><li><a class="level is-mobile" href="/categories/Backend/DevOps/Distributed-Systems/"><span class="level-start"><span class="level-item">Distributed Systems</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Backend/DevOps/Messaging-Systems/"><span class="level-start"><span class="level-item">Messaging Systems</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Backend/DevOps/Software-Deployment/"><span class="level-start"><span class="level-item">Software Deployment</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/Backend/Distributed-Systems/"><span class="level-start"><span class="level-item">Distributed Systems</span></span><span class="level-end"><span class="level-item tag">2</span></span></a><ul><li><a class="level is-mobile" href="/categories/Backend/Distributed-Systems/DevOps/"><span class="level-start"><span class="level-item">DevOps</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Backend/Distributed-Systems/Software-Architecture/"><span class="level-start"><span class="level-item">Software Architecture</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/Backend/Django/"><span class="level-start"><span class="level-item">Django</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Backend/Node-js/"><span class="level-start"><span class="level-item">Node.js</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Backend/Prisma/"><span class="level-start"><span class="level-item">Prisma</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/Batch-Server/"><span class="level-start"><span class="level-item">Batch Server</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Book-Review/"><span class="level-start"><span class="level-item">Book Review</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Books/"><span class="level-start"><span class="level-item">Books</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/CLI/"><span class="level-start"><span class="level-item">CLI</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/CS/"><span class="level-start"><span class="level-item">CS</span></span><span class="level-end"><span class="level-item tag">2</span></span></a><ul><li><a class="level is-mobile" href="/categories/CS/DataStructure/"><span class="level-start"><span class="level-item">DataStructure</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/Crawling/"><span class="level-start"><span class="level-item">Crawling</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Cron/"><span class="level-start"><span class="level-item">Cron</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Docker/"><span class="level-start"><span class="level-item">Docker</span></span><span class="level-end"><span class="level-item tag">1</span></span></a><ul><li><a class="level is-mobile" href="/categories/Docker/Linux/"><span class="level-start"><span class="level-item">Linux</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/Framework/"><span class="level-start"><span class="level-item">Framework</span></span><span class="level-end"><span class="level-item tag">1</span></span></a><ul><li><a class="level is-mobile" href="/categories/Framework/Python/"><span class="level-start"><span class="level-item">Python</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/Frontend/"><span class="level-start"><span class="level-item">Frontend</span></span><span class="level-end"><span class="level-item tag">1</span></span></a><ul><li><a class="level is-mobile" href="/categories/Frontend/React-js/"><span class="level-start"><span class="level-item">React.js</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/Java/"><span class="level-start"><span class="level-item">Java</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/Javascript/"><span class="level-start"><span class="level-item">Javascript</span></span><span class="level-end"><span class="level-item tag">1</span></span></a><ul><li><a class="level is-mobile" href="/categories/Javascript/Node-js/"><span class="level-start"><span class="level-item">Node.js</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/LLM/"><span class="level-start"><span class="level-item">LLM</span></span><span class="level-end"><span class="level-item tag">5</span></span></a><ul><li><a class="level is-mobile" href="/categories/LLM/BERT/"><span class="level-start"><span class="level-item">BERT</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/LLM/LangChain/"><span class="level-start"><span class="level-item">LangChain</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/LLM/LangSmith/"><span class="level-start"><span class="level-item">LangSmith</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/LaTeX/"><span class="level-start"><span class="level-item">LaTeX</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/LiteLLM/"><span class="level-start"><span class="level-item">LiteLLM</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Machine-Learning/"><span class="level-start"><span class="level-item">Machine Learning</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Microsoft/"><span class="level-start"><span class="level-item">Microsoft</span></span><span class="level-end"><span class="level-item tag">3</span></span></a><ul><li><a class="level is-mobile" href="/categories/Microsoft/AI/"><span class="level-start"><span class="level-item">AI</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/Netflix/"><span class="level-start"><span class="level-item">Netflix</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Network/"><span class="level-start"><span class="level-item">Network</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/Projects/"><span class="level-start"><span class="level-item">Projects</span></span><span class="level-end"><span class="level-item tag">9</span></span></a><ul><li><a class="level is-mobile" href="/categories/Projects/Conelab/"><span class="level-start"><span class="level-item">Conelab</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/categories/Projects/SKT/"><span class="level-start"><span class="level-item">SKT</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/Python/"><span class="level-start"><span class="level-item">Python</span></span><span class="level-end"><span class="level-item tag">1</span></span></a><ul><li><a class="level is-mobile" href="/categories/Python/Matplotlib/"><span class="level-start"><span class="level-item">Matplotlib</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Python/Pandas/"><span class="level-start"><span class="level-item">Pandas</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/SageMaker/"><span class="level-start"><span class="level-item">SageMaker</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Security/"><span class="level-start"><span class="level-item">Security</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/Software-Engineering/"><span class="level-start"><span class="level-item">Software Engineering</span></span><span class="level-end"><span class="level-item tag">1</span></span></a><ul><li><a class="level is-mobile" href="/categories/Software-Engineering/Computer-Science/"><span class="level-start"><span class="level-item">Computer Science</span></span><span class="level-end"><span class="level-item tag">1</span></span></a><ul><li><a class="level is-mobile" href="/categories/Software-Engineering/Computer-Science/Performance-Optimization/"><span class="level-start"><span class="level-item">Performance Optimization</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></li></ul></li><li><a class="level is-mobile" href="/categories/Toy-Project/"><span class="level-start"><span class="level-item">Toy Project</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/categories/Travel/"><span class="level-start"><span class="level-item">Travel</span></span><span class="level-end"><span class="level-item tag">2</span></span></a><ul><li><a class="level is-mobile" href="/categories/Travel/Japan/"><span class="level-start"><span class="level-item">Japan</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li></ul></li><li><a class="level is-mobile" href="/categories/Unity/"><span class="level-start"><span class="level-item">Unity</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/blockchain/"><span class="level-start"><span class="level-item">blockchain</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/maya/"><span class="level-start"><span class="level-item">maya</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/nmap/"><span class="level-start"><span class="level-item">nmap</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/categories/papers/"><span class="level-start"><span class="level-item">papers</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li></ul></div></div></div><div class="column-right-shadow is-hidden-widescreen"></div></div><div class="column column-right is-4-tablet is-4-desktop is-3-widescreen is-hidden-touch is-hidden-desktop-only order-3"><div class="card widget" data-type="recent-posts"><div class="card-content"><h3 class="menu-label">Recents</h3><article class="media"><div class="media-content"><p class="date"><time dateTime="2025-09-03T15:32:23.000Z">2025-09-04</time></p><p class="title"><a href="/2025/09/04/AI-System-Builiding-and-Operating/">AI-System-Builiding-and-Operating</a></p><p class="categories"><a href="/categories/AI/">AI</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2025-09-03T15:04:40.000Z">2025-09-04</time></p><p class="title"><a href="/2025/09/04/AI-Model-Development/">AI-Model-Development</a></p><p class="categories"><a href="/categories/AI/">AI</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2025-08-29T08:31:29.000Z">2025-08-29</time></p><p class="title"><a href="/2025/08/29/AI-Data-Preprocessing/">AI 데이터 전처리</a></p><p class="categories"><a href="/categories/AI/">AI</a> / <a href="/categories/AI/MLOps/">MLOps</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2025-01-28T06:47:55.000Z">2025-01-28</time></p><p class="title"><a href="/2025/01/28/Azure-EventHub/">Azure-EventHub</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2025-01-21T13:21:15.000Z">2025-01-21</time></p><p class="title"><a href="/2025/01/21/Azure-API-Management-Deploy/">Azure-API-Management-Deploy</a></p></div></article></div></div><div class="card widget" data-type="archives"><div class="card-content"><div class="menu"><h3 class="menu-label">Archives</h3><ul class="menu-list"><li><a class="level is-mobile" href="/archives/2025/09/"><span class="level-start"><span class="level-item">September 2025</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2025/08/"><span class="level-start"><span class="level-item">August 2025</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2025/01/"><span class="level-start"><span class="level-item">January 2025</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/12/"><span class="level-start"><span class="level-item">December 2024</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/11/"><span class="level-start"><span class="level-item">November 2024</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/10/"><span class="level-start"><span class="level-item">October 2024</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/09/"><span class="level-start"><span class="level-item">September 2024</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/08/"><span class="level-start"><span class="level-item">August 2024</span></span><span class="level-end"><span class="level-item tag">9</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/07/"><span class="level-start"><span class="level-item">July 2024</span></span><span class="level-end"><span class="level-item tag">6</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/06/"><span class="level-start"><span class="level-item">June 2024</span></span><span class="level-end"><span class="level-item tag">7</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/05/"><span class="level-start"><span class="level-item">May 2024</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/04/"><span class="level-start"><span class="level-item">April 2024</span></span><span class="level-end"><span class="level-item tag">10</span></span></a></li><li><a class="level is-mobile" href="/archives/2024/03/"><span class="level-start"><span class="level-item">March 2024</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile" href="/archives/2022/03/"><span class="level-start"><span class="level-item">March 2022</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li><li><a class="level is-mobile" href="/archives/2022/02/"><span class="level-start"><span class="level-item">February 2022</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2022/01/"><span class="level-start"><span class="level-item">January 2022</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/09/"><span class="level-start"><span class="level-item">September 2021</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/02/"><span class="level-start"><span class="level-item">February 2021</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2020/10/"><span class="level-start"><span class="level-item">October 2020</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li><li><a class="level is-mobile" href="/archives/2020/09/"><span class="level-start"><span class="level-item">September 2020</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/archives/2020/08/"><span class="level-start"><span class="level-item">August 2020</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2020/07/"><span class="level-start"><span class="level-item">July 2020</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2020/06/"><span class="level-start"><span class="level-item">June 2020</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2020/05/"><span class="level-start"><span class="level-item">May 2020</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2020/04/"><span class="level-start"><span class="level-item">April 2020</span></span><span class="level-end"><span class="level-item tag">8</span></span></a></li><li><a class="level is-mobile" href="/archives/2020/03/"><span class="level-start"><span class="level-item">March 2020</span></span><span class="level-end"><span class="level-item tag">8</span></span></a></li><li><a class="level is-mobile" href="/archives/2019/09/"><span class="level-start"><span class="level-item">September 2019</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></div></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">Tags</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/AI/"><span class="tag">AI</span><span class="tag">9</span></a></div><div class="control"><a class="tags has-addons" href="/tags/AWS/"><span class="tag">AWS</span><span class="tag">19</span></a></div><div class="control"><a class="tags has-addons" href="/tags/AZ104/"><span class="tag">AZ104</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/AZ204/"><span class="tag">AZ204</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Agent/"><span class="tag">Agent</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Akka/"><span class="tag">Akka</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Algorithm/"><span class="tag">Algorithm</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Azure/"><span class="tag">Azure</span><span class="tag">9</span></a></div><div class="control"><a class="tags has-addons" href="/tags/BERT/"><span class="tag">BERT</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Backend/"><span class="tag">Backend</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Batch-Server/"><span class="tag">Batch Server</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Blog/"><span class="tag">Blog</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Books/"><span class="tag">Books</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/CLI/"><span class="tag">CLI</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/CS/"><span class="tag">CS</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Cassandra/"><span class="tag">Cassandra</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Cloud/"><span class="tag">Cloud</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Concurrency/"><span class="tag">Concurrency</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Container/"><span class="tag">Container</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Crawling/"><span class="tag">Crawling</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Cron/"><span class="tag">Cron</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/DataPreprocessing/"><span class="tag">DataPreprocessing</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/DataStructure/"><span class="tag">DataStructure</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Database/"><span class="tag">Database</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Deep-Learning/"><span class="tag">Deep Learning</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/DeepLearning/"><span class="tag">DeepLearning</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/DevOps/"><span class="tag">DevOps</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Distributed-Systems/"><span class="tag">Distributed Systems</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Django/"><span class="tag">Django</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Docker/"><span class="tag">Docker</span><span class="tag">7</span></a></div><div class="control"><a class="tags has-addons" href="/tags/FeatureEngineering/"><span class="tag">FeatureEngineering</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Firebase/"><span class="tag">Firebase</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Frontend/"><span class="tag">Frontend</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/GPU/"><span class="tag">GPU</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Hexo/"><span class="tag">Hexo</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Hololens/"><span class="tag">Hololens</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Insertion-Sort/"><span class="tag">Insertion Sort</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Java/"><span class="tag">Java</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Javascript/"><span class="tag">Javascript</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/JupyterLab/"><span class="tag">JupyterLab</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Kafka/"><span class="tag">Kafka</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Kruscal/"><span class="tag">Kruscal</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Kubernetes/"><span class="tag">Kubernetes</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/LLM/"><span class="tag">LLM</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/LLM-LangChain/"><span class="tag">LLM,LangChain</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/LaTeX/"><span class="tag">LaTeX</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Lagom/"><span class="tag">Lagom</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/LangChain/"><span class="tag">LangChain</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/LangSmith/"><span class="tag">LangSmith</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Linux/"><span class="tag">Linux</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/LiteLLM/"><span class="tag">LiteLLM</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/MLOps/"><span class="tag">MLOps</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/MS-Azure/"><span class="tag">MS Azure</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/MST/"><span class="tag">MST</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Machine-Learning/"><span class="tag">Machine Learning</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/MachineLearning/"><span class="tag">MachineLearning</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Matplotlib/"><span class="tag">Matplotlib</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Microservices/"><span class="tag">Microservices</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Microsoft/"><span class="tag">Microsoft</span><span class="tag">8</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Microsoft-Azure/"><span class="tag">Microsoft,Azure</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/ModelDevelopment/"><span class="tag">ModelDevelopment</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Multi-threading/"><span class="tag">Multi-threading</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/NLP/"><span class="tag">NLP</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Netflix/"><span class="tag">Netflix</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Network/"><span class="tag">Network</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Node-js/"><span class="tag">Node.js</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Pandas/"><span class="tag">Pandas</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Prim/"><span class="tag">Prim</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Programming/"><span class="tag">Programming</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Python/"><span class="tag">Python</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Quick-Sort/"><span class="tag">Quick Sort</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/React/"><span class="tag">React</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/React-js/"><span class="tag">React.js</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Redis/"><span class="tag">Redis</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Redux/"><span class="tag">Redux</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/SK/"><span class="tag">SK</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/SageMaker/"><span class="tag">SageMaker</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Scala/"><span class="tag">Scala</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Scalability/"><span class="tag">Scalability</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Security/"><span class="tag">Security</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Selection-Sort/"><span class="tag">Selection Sort</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Sort/"><span class="tag">Sort</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/System/"><span class="tag">System</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Travel/"><span class="tag">Travel</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/UnionFind/"><span class="tag">UnionFind</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Unix/"><span class="tag">Unix</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Usenix/"><span class="tag">Usenix</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/Zookeeper/"><span class="tag">Zookeeper</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/blockchain/"><span class="tag">blockchain</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/c/"><span class="tag">c#</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/graphql/"><span class="tag">graphql</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/javascript/"><span class="tag">javascript</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/machineLearning/"><span class="tag">machineLearning</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/maya/"><span class="tag">maya</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/nmap/"><span class="tag">nmap</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/node-js/"><span class="tag">node.js</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/prisma/"><span class="tag">prisma</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/python/"><span class="tag">python</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/typescript/"><span class="tag">typescript</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/unity/"><span class="tag">unity</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/vuforia/"><span class="tag">vuforia</span><span class="tag">1</span></a></div></div></div></div></div><div class="card widget" data-type="subscribe-email"><div class="card-content"><div class="menu"><h3 class="menu-label">Subscribe for updates</h3><form action="https://feedburner.google.com/fb/a/mailverify" method="post" target="popupwindow" onsubmit="window.open(&#039;https://feedburner.google.com/fb/a/mailverify?uri=&#039;,&#039;popupwindow&#039;,&#039;scrollbars=yes,width=550,height=520&#039;);return true"><input type="hidden" value="" name="uri"><input type="hidden" name="loc" value="en_US"><div class="field has-addons"><div class="control has-icons-left is-expanded"><input class="input" name="email" type="email" placeholder="Email"><span class="icon is-small is-left"><i class="fas fa-envelope"></i></span></div><div class="control"><input class="button" type="submit" value="Subscribe"></div></div></form></div></div></div><div class="card widget"><div class="card-content"><div class="notification is-danger">You need to set <code>client_id</code> and <code>slot_id</code> to show this AD unit. Please set it in <code>_config.yml</code>.</div></div></div><div class="card widget" data-type="subscribe-email"><div class="card-content"><div class="menu"><h3 class="menu-label">follow.it</h3><form action="" method="post" target="_blank"><div class="field has-addons"><div class="control has-icons-left is-expanded"><input class="input" name="email" type="email" placeholder="Email"><span class="icon is-small is-left"><i class="fas fa-envelope"></i></span></div><div class="control"><input class="button" type="submit" value="Subscribe"></div></div></form></div></div></div></div></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/avatar.png" alt="Kahlua" height="28"></a><p class="is-size-7"><span>&copy; 2025 Hamin Lee</span>  Powered by <a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a> &amp; <a href="https://github.com/ppoffice/hexo-theme-icarus" target="_blank" rel="noopener">Icarus</a></p><p class="is-size-7">© 2019</p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/ppoffice/hexo-theme-icarus"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("en");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="Back to top" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><!--!--><!--!--><!--!--><script src="https://cdn.jsdelivr.net/npm/cookieconsent@3.1.1/build/cookieconsent.min.js" defer></script><script>window.addEventListener("load", () => {
+      window.cookieconsent.initialise({
+        type: "info",
+        theme: "edgeless",
+        static: false,
+        position: "bottom-left",
+        content: {
+          message: "This website uses cookies to improve your experience.",
+          dismiss: "Got it!",
+          allow: "Allow cookies",
+          deny: "Decline",
+          link: "Learn more",
+          policy: "Cookie Policy",
+          href: "https://www.cookiesandyou.com/",
+        },
+        palette: {
+          popup: {
+            background: "#edeff5",
+            text: "#838391"
+          },
+          button: {
+            background: "#4b81e8"
+          },
+        },
+      });
+    });</script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.10.0/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.8.1/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="Type something..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"Type something...","untitled":"(Untitled)","posts":"Posts","pages":"Pages","categories":"Categories","tags":"Tags"});
+        });</script></body></html>

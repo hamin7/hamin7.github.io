@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1f2937"/>
+      <stop offset="100%" stop-color="#0ea5e9"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#g)"/>
+  <g fill="none" stroke="rgba(255,255,255,0.12)">
+    <circle cx="200" cy="160" r="120"/>
+    <circle cx="360" cy="260" r="160"/>
+    <circle cx="720" cy="180" r="200"/>
+    <circle cx="980" cy="380" r="160"/>
+    <path d="M120 500 C 240 420, 480 560, 720 480 S 1080 520, 1140 460"/>
+  </g>
+  <text x="60" y="140" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="26" fill="#a7f3d0" letter-spacing="2">MLOps • Best Practices</text>
+  <text x="60" y="220" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="56" font-weight="700" fill="#ffffff">AI시스템(ML Pipeline) 설계 및 배포</text>
+  <text x="60" y="290" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="26" fill="#e5e7eb">(설계-배포-모니터링-자동화-최적화)</text>
+  <text x="60" y="330" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="26" fill="#e5e7eb">AI시스템 모니터링 및 자동화 (지속운영)</text>
+  <text x="60" y="370" font-family="Inter,Segoe UI,Helvetica,Arial,sans-serif" font-size="26" fill="#e5e7eb">AI시스템 최적화</text>
+  
+</svg>
+
